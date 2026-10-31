@@ -1,0 +1,101 @@
+app:
+  id: ari:cloud:ecosystem::app/REPLACE_AFTER_FORGE_REGISTER
+  runtime:
+    name: nodejs22.x
+modules:
+  action:
+    - key: get-change-context
+      name: Get Change Context
+      description: |
+        Given a Jira issue key, return the connected change context from Teamwork Graph: linked pull requests, commits, builds, deployments, related Confluence pages and owners. Use when the user asks what a change touches or could break.
+      actionVerb: GET
+      function: getChangeContext
+      inputs:
+        issueKey:
+          title: Issue key
+          type: string
+          required: true
+          description: Jira issue key such as APP-123.
+    - key: score-release-risk
+      name: Score Release Risk
+      description: |
+        Given a Jira project key and release version name, gather graph evidence for every issue in the release and return a deterministic 0-100 risk score, reasons and a pre-release checklist. Use when the user asks whether a release is safe to ship.
+      actionVerb: GET
+      function: scoreReleaseRisk
+      inputs:
+        versionName:
+          title: Version name
+          type: string
+          required: true
+          description: Jira release version name.
+        projectKey:
+          title: Project key
+          type: string
+          required: true
+          description: Jira project key.
+    - key: find-experts
+      name: Find Experts
+      description: |
+        Given a Jira issue key, return the people and teams connected to the related code and documentation in Teamwork Graph. Use when the user asks who knows about a change or who should review it.
+      actionVerb: GET
+      function: findExperts
+      inputs:
+        issueKey:
+          title: Issue key
+          type: string
+          required: true
+          description: Jira issue key such as APP-123.
+  rovo:agent:
+    - key: blast-radius-agent
+      name: Blast Radius
+      description: Understand release impact, decisions and experts.
+      prompt: resource:agent-prompts;agent-prompt.txt
+      conversationStarters:
+        - What could APP-123 break?
+        - Score version 1.0 in project APP.
+        - Who knows about APP-123 and what was already decided?
+      actions:
+        - get-change-context
+        - score-release-risk
+        - find-experts
+  rovo:mcp:
+    - key: blast-radius-mcp
+      name: Blast Radius MCP
+      tools:
+        - get-change-context
+        - score-release-risk
+        - find-experts
+  jira:issuePanel:
+    - key: blast-radius-panel
+      resource: main
+      render: native
+      resolver:
+        function: resolver
+      title: Blast Radius
+  function:
+    - key: getChangeContext
+      handler: index.getChangeContext
+    - key: scoreReleaseRisk
+      handler: index.scoreReleaseRisk
+    - key: findExperts
+      handler: index.findExperts
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+  - key: agent-prompts
+    path: prompts
+permissions:
+  scopes:
+    - read:jira-work
+    - read:graph:issue:jira
+    - read:graph:project:jira
+    - read:graph:version:jira
+    - read:graph:page:confluence
+    - read:graph:user:atlassian
+    - read:graph:team:atlassian
+    - read:graph:pull-request:external
+    - read:graph:commit:external
+    - read:graph:deployment:external
+    - read:graph:build:external
