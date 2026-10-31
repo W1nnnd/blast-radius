@@ -1,3 +1,4 @@
 node_modules/
 .env
 .forge/
+demo/seed/.seed-state.json

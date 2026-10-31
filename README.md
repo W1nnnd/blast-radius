@@ -1,48 +1,91 @@
-# Blast Radius
+# Blast Radius — know what a release could break before you ship it
 
-> **Status: skeleton, not yet deployed**
+> Codegeist 2026 · **Apps for Software Teams** · Forge app for Jira + Rovo + Atlassian MCP + Teamwork Graph
+>
+> Status (2026-10-31): complete locally, 101 unit tests green, manifest validated against the Forge schema.
+> Not yet registered/deployed — see [docs/DEPLOY_AFTER_LOGIN.md](docs/DEPLOY_AFTER_LOGIN.md).
 
-Before a Jira release: what could this change break, who knows about it, and what was already decided? This Forge skeleton connects Jira issues to external pull requests, commits, builds and deployments, Confluence pages and decisions, and owners/teams through Teamwork Graph. It provides three Rovo/MCP actions and a UI Kit issue panel with a deterministic risk score and checklist.
+Before every release an engineering lead has to answer three questions:
+**What could this break? Who knows this code? What did we already decide or learn the hard way?**
+The answers are scattered across Jira issues, pull requests, CI builds, deployments, Confluence runbooks and ADRs,
+and incident tickets. Blast Radius walks **Atlassian Teamwork Graph** from a Jira issue or release version to all of
+that context and turns it into:
 
-Codegeist category: **Apps for Software Teams**. Bonus-prize eligibility (verified against the official rules on 2026-10-31): Best Agents (`rovo:agent` + reusable `action`s), Best app with Atlassian MCP (`rovo:mcp` + open-source `skills/blast-radius/SKILL.md`), Best apps with Teamwork Graph integration (`requestTeamworkGraph`), and Best Marketplace published app (once submitted for listing). A single submission can win at most one bonus prize.
+1. **A go / no-go verdict** — `GO`, `GO_WITH_CAUTION`, `HOLD` or `INSUFFICIENT_EVIDENCE`, with a 0–100 score.
+2. **Explainable risks** — every point comes from a named rule, and every rule links to its evidence (PR, build, deployment, page, incident).
+3. **A pre-release checklist** — concrete `must / should / nice` actions with suggested owners (reviewer load-balanced, never the PR author).
+4. **Who to ask** — experts ranked from authored/approved PRs, owned runbooks and assignments, with recency decay.
 
-## Development
+The score is **deterministic** (no LLM decides the number). Rovo and external agents only explain it.
 
-Use Node 22 (recommended) or 24. The manifest runtime is nodejs22.x. ESM source is bundled by Forge; package.json declares type: module. The CLI is the only development dependency.
+## One engine, three surfaces
+| Surface | Manifest module | For |
+|---|---|---|
+| Jira issue panel (UI Kit) | `jira:issuePanel` | Humans on the issue: verdict, top risks, checklist, experts, evidence coverage; one click to analyze the whole fixVersion |
+| Rovo agent "Blast Radius" | `rovo:agent` + 4 `action`s | "Can we ship PAY 2.4.0?" in Rovo Chat or automation |
+| Atlassian MCP server | `rovo:mcp` (same 4 actions) | Claude, Cursor and other MCP clients via `https://mcp.atlassian.com/forge/<appId>`, plus open-source [`skills/blast-radius/SKILL.md`](skills/blast-radius/SKILL.md) |
 
+Actions: `get-change-context(issueKey)`, `score-release-risk(projectKey, versionName)`, `find-experts(issueKey)`,
+`generate-release-checklist(projectKey, versionName)` → Markdown ready for a PR, Confluence page or Slack.
+
+## Architecture
+```
+ Jira issue panel ─┐                         ┌─ engine/risk.js       19 declarative rules, 6 capped categories
+ Rovo agent ───────┼─> handlers.js ─> service ┼─ engine/checklist.js  must/should/nice + reviewer suggestion
+ MCP clients ──────┘   (validation,   .js     ├─ engine/experts.js    weighted, recency-decayed ranking
+                        bounded output)       └─ engine/coverage.js   confidence from data coverage
+                                │
+                     graph/adapter.js  (one interface, swappable)
+                     ├─ twgAdapter.js    Teamwork Graph: curated queries + persisted Cypher (customQuery), asUser()
+                     │    └─ jira/jiraRest.js  key→ARI, fixVersion JQL, issue-link fallback
+                     └─ fixtureAdapter.js  demo dataset (demo/seed/dataset.json)
+```
+- **Teamwork Graph done the current way.** Raw `cypherQuery` is no longer available to new apps, so Blast Radius uses
+  the curated fields `jiraWorkItemLinkedExternalPullRequests`, `jiraWorkItemLinkedExternalDeployments` and
+  `atlassianUserInTeams`, plus **persisted Cypher** queries (builds, commits, blockers, linked pages, incidents, release
+  membership) registered once by `scripts/register-persisted-queries.mjs` and executed with `customQuery`.
+  Every name was checked against the public docs: [docs/TWG_VERIFIED_SCHEMA.md](docs/TWG_VERIFIED_SCHEMA.md).
+- **Least privilege:** `read:jira-work` + 12 per-object `read:graph:<object>:<product>` scopes. All calls run `asUser()`, so
+  results are permission-filtered for the person asking. Read-only; no egress; Runs on Atlassian.
+- **Fail closed, never falsely green.** A missing scope returns empty rows in TWG; Blast Radius records per-source
+  `coverage` and drops confidence, and the verdict becomes `INSUFFICIENT_EVIDENCE` instead of `GO`.
+- **Safe for LLMs.** Inputs validated (keys normalized, context fallback), outputs bounded (≤25 items, ≤2,000 chars,
+  <100 KB), errors returned as `{error:{code,message}}`, and the agent prompt treats graph text as untrusted data.
+
+## Risk model (src/engine/risk.js)
+| Category (cap) | Rules (points) |
+|---|---|
+| Code review (25) | no reviewers (12), changes requested (10), not yet approved (6), diff > 500 lines (5) |
+| CI (20) | failed build (15, **blocker**), build still running (4) |
+| Deployment (20) | pre-prod deployment failed/rolled back (12), production rollback ≤ 30 days (15, **blocker**), merged but never validated pre-prod (6), open linked incident (10, **blocker**) |
+| Scope (15) | unfinished issue (3, high priority 6), blocked by open issue (5), ≥ 3 repositories touched (5) |
+| Ownership (10) | unassigned (3), single-author bus factor (5), no owning team (2) |
+| Knowledge (10) | runbook stale > 90 days (5), no runbook while deploying to prod (4), decision superseded after merge (3) |
+Levels: `low` < 30 ≤ `medium` < 60 ≤ `high`; `critical` = high + at least one blocker.
+
+## Try it locally (no Atlassian account needed)
 ```sh
 npm install
-npm test
-npx --no-install forge lint
+npm test                                        # 101 tests
+npm run validate:manifest                       # manifest vs. @forge/manifest JSON schema
+node scripts/demo-cli.mjs release PAY 2.4.0 --text   # HOLD · 88/100 · high confidence
+node scripts/demo-cli.mjs release PAY 2.3.1 --text   # GO · 0/100
+node scripts/demo-cli.mjs issue PAY-142 --text
+npm run seed:plan                               # what the demo-site seeding would create
+npm run queries:plan                            # persisted Cypher that would be registered
 ```
 
-The queries in src/twg.js are illustrative. Before deployment, verify labels, relationship names/directions, properties, GraphQL argument types and field selections at https://teamwork-graph.atlassian.com/query-builder. The current minimal selection returns IDs and types only. Add verified data fragments and map their fields into the contract documented in src/risk.js before relying on risk scores or expert names. Missing evidence is uncertainty; a low score does not establish safety.
+## Demo data
+`demo/seed/dataset.json` is a fictional fintech, **Northwind Pay**: project `PAY`, releases `2.4.0` (risky) and `2.3.1`
+(clean hotfix), 8 people in 3 teams, 3 repositories, 10 PRs, 8 builds, 8 deployments, 6 Confluence pages, 1 incident.
+`scripts/seed-demo-site.mjs --apply` recreates the Jira/Confluence side on a `forge site provision` demo site
+(versions, issues, "Blocks" links, pages that link the issues, remote links to PRs). PR/build/deployment objects reach
+Teamwork Graph only through a connected dev tool, so the panel can also run on the dataset with
+`BLAST_RADIUS_DATA_SOURCE=fixture` (clearly labelled "Demo data").
 
-Graph requests use api.asUser() and parameterized queries. Lists are capped at 25, strings at 2,000 characters, and total serialized output at 500,000 UTF-16 units (under 5 MB UTF-8). Risk covers returned evidence only. The Cypher row limit does not bound server-side collection aggregation: add verified collection limits/pagination for production. Errors are surfaced; empty results are explicitly marked.
+## Repository map
+`manifest.yml` · `src/` (index → handlers → service → engine / graph / jira) · `src/frontend/index.jsx` (UI Kit) ·
+`prompts/agent-prompt.txt` · `skills/blast-radius/SKILL.md` · `scripts/` · `demo/seed/` · `test/` · `docs/`
+([Devpost text](docs/DEVPOST_SUBMISSION.md), [video script](docs/DEMO_VIDEO_SCRIPT.md), [deploy runbook](docs/DEPLOY_AFTER_LOGIN.md)).
 
-## Setup when ready
-
-These are instructions only; the app has not been registered, deployed or installed.
-
-1. Authenticate Forge CLI in your environment.
-2. Run `npx --no-install forge register` and replace the placeholder app ARI with the registered ID.
-3. Verify graph queries, field mappings, scopes and MCP module support, then run `npx --no-install forge lint`.
-4. Run `npx --no-install forge deploy`.
-5. Install using `npx --no-install forge install --demo-site` or `npx --no-install forge install --site your-site.atlassian.net --product jira`. Confirm flag availability in your CLI version.
-6. Enable **Rovo MCP external exposure** for the app through the relevant Atlassian app/admin controls available to your tenant; confirm organization policy and user consent.
-7. Connect your OAuth-capable MCP client to `https://mcp.atlassian.com/forge/<appId>` using the registered app ID. See skills/blast-radius/SKILL.md for Claude/Cursor instructions.
-
-`get-change-context` and `find-experts` take issueKey. `score-release-risk` takes versionName and projectKey. Tool outputs include only evidence accessible to the invoking user.
-
-## Validation
-
-The pure model in src/risk.js documents additive weights and thresholds. Tests cover empty context, exact combined scores, every weighted signal, score clamping, checklists, neutral evidence and malformed graph parsing. src/parse.js has no Forge dependency.
-
-MIT license. Copyright 2026 W1nnnd.
-
-### Checks in this workspace
-
-- `npm test`: passed on Node 24.22.1. `node test/index.js` also ran all seven assertions successfully.
-- `npm install`: succeeded (2026-10-31).
-- `npx --no-install forge lint`: attempted with the available global CLI, offline npm mode, isolated temporary CLI configuration and network connections disabled. Blocked on this headless box by the Secret Service/keytar error (no keyring). Manifest/schema validation remains outstanding until `forge login` works (use `FORGE_EMAIL`/`FORGE_API_TOKEN` env vars or a keyring).
-- No login, registration, deployment, installation or push was performed.
+MIT License © 2026 W1nnnd.

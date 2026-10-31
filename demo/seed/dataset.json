@@ -1,0 +1,816 @@
+{
+  "meta": {
+    "now": "2026-12-10T09:00:00Z",
+    "company": "Northwind Pay"
+  },
+  "people": [
+    {
+      "accountId": "p0",
+      "name": "Mira Vale"
+    },
+    {
+      "accountId": "p1",
+      "name": "Owen Reed"
+    },
+    {
+      "accountId": "p2",
+      "name": "Nia Rowan"
+    },
+    {
+      "accountId": "p3",
+      "name": "Theo Moss"
+    },
+    {
+      "accountId": "p4",
+      "name": "Iris Lane"
+    },
+    {
+      "accountId": "p5",
+      "name": "Felix Shore"
+    },
+    {
+      "accountId": "p6",
+      "name": "Ada Finch"
+    },
+    {
+      "accountId": "p7",
+      "name": "Leo Brook"
+    }
+  ],
+  "teams": [
+    {
+      "id": "t0",
+      "name": "Payments Core",
+      "members": [
+        "p0",
+        "p1",
+        "p2"
+      ]
+    },
+    {
+      "id": "t1",
+      "name": "Platform/SRE",
+      "members": [
+        "p3",
+        "p4",
+        "p5"
+      ]
+    },
+    {
+      "id": "t2",
+      "name": "Mobile",
+      "members": [
+        "p6",
+        "p7"
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "key": "PAY-142",
+      "id": "10142",
+      "summary": "Refund idempotency",
+      "status": "In Progress",
+      "statusCategory": "indeterminate",
+      "priority": "High",
+      "type": "Bug",
+      "assignee": null,
+      "url": "https://northwind-pay.example/browse/PAY-142",
+      "updatedAt": "2026-12-10T09:00:00Z",
+      "version": "2.4.0",
+      "blockers": [
+        {
+          "key": "PAY-143",
+          "summary": "Ledger reconciliation",
+          "statusCategory": "indeterminate",
+          "url": "https://northwind-pay.example/browse/PAY-143"
+        }
+      ]
+    },
+    {
+      "key": "PAY-143",
+      "id": "10143",
+      "summary": "Ledger reconciliation",
+      "status": "In Progress",
+      "statusCategory": "indeterminate",
+      "priority": "High",
+      "type": "Story",
+      "assignee": {
+        "accountId": "p1",
+        "name": "Owen Reed"
+      },
+      "url": "https://northwind-pay.example/browse/PAY-143",
+      "updatedAt": "2026-12-10T09:00:00Z",
+      "version": "2.4.0",
+      "blockers": []
+    },
+    {
+      "key": "PAY-144",
+      "id": "10144",
+      "summary": "Checkout retry flow",
+      "status": "In Progress",
+      "statusCategory": "indeterminate",
+      "priority": "High",
+      "type": "Story",
+      "assignee": {
+        "accountId": "p2",
+        "name": "Nia Rowan"
+      },
+      "url": "https://northwind-pay.example/browse/PAY-144",
+      "updatedAt": "2026-12-10T09:00:00Z",
+      "version": "2.4.0",
+      "blockers": []
+    },
+    {
+      "key": "PAY-145",
+      "id": "10145",
+      "summary": "Payment timeout handling",
+      "status": "In Progress",
+      "statusCategory": "indeterminate",
+      "priority": "Medium",
+      "type": "Story",
+      "assignee": {
+        "accountId": "p3",
+        "name": "Theo Moss"
+      },
+      "url": "https://northwind-pay.example/browse/PAY-145",
+      "updatedAt": "2026-12-10T09:00:00Z",
+      "version": "2.4.0",
+      "blockers": []
+    },
+    {
+      "key": "PAY-146",
+      "id": "10146",
+      "summary": "Audit event delivery",
+      "status": "In Progress",
+      "statusCategory": "indeterminate",
+      "priority": "Medium",
+      "type": "Story",
+      "assignee": {
+        "accountId": "p4",
+        "name": "Iris Lane"
+      },
+      "url": "https://northwind-pay.example/browse/PAY-146",
+      "updatedAt": "2026-12-10T09:00:00Z",
+      "version": "2.4.0",
+      "blockers": []
+    },
+    {
+      "key": "PAY-147",
+      "id": "10147",
+      "summary": "Settlement scheduling",
+      "status": "In Progress",
+      "statusCategory": "indeterminate",
+      "priority": "Medium",
+      "type": "Story",
+      "assignee": {
+        "accountId": "p5",
+        "name": "Felix Shore"
+      },
+      "url": "https://northwind-pay.example/browse/PAY-147",
+      "updatedAt": "2026-12-10T09:00:00Z",
+      "version": "2.4.0",
+      "blockers": []
+    },
+    {
+      "key": "PAY-148",
+      "id": "10148",
+      "summary": "Refund receipt",
+      "status": "Done",
+      "statusCategory": "done",
+      "priority": "Medium",
+      "type": "Story",
+      "assignee": {
+        "accountId": "p6",
+        "name": "Ada Finch"
+      },
+      "url": "https://northwind-pay.example/browse/PAY-148",
+      "updatedAt": "2026-12-10T09:00:00Z",
+      "version": "2.4.0",
+      "blockers": []
+    },
+    {
+      "key": "PAY-149",
+      "id": "10149",
+      "summary": "Gateway failover",
+      "status": "Done",
+      "statusCategory": "done",
+      "priority": "Medium",
+      "type": "Story",
+      "assignee": {
+        "accountId": "p7",
+        "name": "Leo Brook"
+      },
+      "url": "https://northwind-pay.example/browse/PAY-149",
+      "updatedAt": "2026-12-10T09:00:00Z",
+      "version": "2.4.0",
+      "blockers": []
+    },
+    {
+      "key": "PAY-150",
+      "id": "10150",
+      "summary": "Correct rounding edge case",
+      "status": "Done",
+      "statusCategory": "done",
+      "priority": "Medium",
+      "type": "Bug",
+      "assignee": {
+        "accountId": "p0",
+        "name": "Mira Vale"
+      },
+      "url": "https://northwind-pay.example/browse/PAY-150",
+      "updatedAt": "2026-12-10T09:00:00Z",
+      "version": "2.3.1",
+      "blockers": []
+    },
+    {
+      "key": "PAY-151",
+      "id": "10151",
+      "summary": "Hotfix release notes",
+      "status": "Done",
+      "statusCategory": "done",
+      "priority": "Medium",
+      "type": "Story",
+      "assignee": {
+        "accountId": "p1",
+        "name": "Owen Reed"
+      },
+      "url": "https://northwind-pay.example/browse/PAY-151",
+      "updatedAt": "2026-12-10T09:00:00Z",
+      "version": "2.3.1",
+      "blockers": []
+    }
+  ],
+  "pullRequests": [
+    {
+      "id": "pr0",
+      "displayId": "42",
+      "title": "Refund idempotency keys",
+      "status": "OPEN",
+      "url": "https://github.com/northwind-pay/payments-api/pull/42",
+      "author": {
+        "accountId": "p0",
+        "name": "Mira Vale"
+      },
+      "reviewers": [],
+      "linesChanged": 850,
+      "repository": "payments-api",
+      "issueKeys": [
+        "PAY-142"
+      ],
+      "updatedAt": "2026-12-07T09:00:00Z"
+    },
+    {
+      "id": "pr1",
+      "displayId": "43",
+      "title": "Ledger reconciliation",
+      "status": "OPEN",
+      "url": "https://github.com/northwind-pay/ledger-service/pull/43",
+      "author": {
+        "accountId": "p1",
+        "name": "Owen Reed"
+      },
+      "reviewers": [],
+      "linesChanged": 80,
+      "repository": "ledger-service",
+      "issueKeys": [
+        "PAY-143"
+      ],
+      "updatedAt": "2026-12-07T09:00:00Z"
+    },
+    {
+      "id": "pr2",
+      "displayId": "44",
+      "title": "Checkout retry flow",
+      "status": "OPEN",
+      "url": "https://github.com/northwind-pay/checkout-web/pull/44",
+      "author": {
+        "accountId": "p2",
+        "name": "Nia Rowan"
+      },
+      "reviewers": [
+        {
+          "person": {
+            "accountId": "p3",
+            "name": "Theo Moss"
+          },
+          "approvalStatus": "NEEDSWORK"
+        }
+      ],
+      "linesChanged": 80,
+      "repository": "checkout-web",
+      "issueKeys": [
+        "PAY-144"
+      ],
+      "updatedAt": "2026-12-07T09:00:00Z"
+    },
+    {
+      "id": "pr3",
+      "displayId": "45",
+      "title": "Payment timeout handling",
+      "status": "OPEN",
+      "url": "https://github.com/northwind-pay/payments-api/pull/45",
+      "author": {
+        "accountId": "p3",
+        "name": "Theo Moss"
+      },
+      "reviewers": [
+        {
+          "person": {
+            "accountId": "p4",
+            "name": "Iris Lane"
+          },
+          "approvalStatus": "APPROVED"
+        }
+      ],
+      "linesChanged": 80,
+      "repository": "payments-api",
+      "issueKeys": [
+        "PAY-145"
+      ],
+      "updatedAt": "2026-12-07T09:00:00Z"
+    },
+    {
+      "id": "pr4",
+      "displayId": "46",
+      "title": "Audit event delivery",
+      "status": "MERGED",
+      "url": "https://github.com/northwind-pay/ledger-service/pull/46",
+      "author": {
+        "accountId": "p4",
+        "name": "Iris Lane"
+      },
+      "reviewers": [
+        {
+          "person": {
+            "accountId": "p5",
+            "name": "Felix Shore"
+          },
+          "approvalStatus": "APPROVED"
+        }
+      ],
+      "linesChanged": 80,
+      "repository": "ledger-service",
+      "issueKeys": [
+        "PAY-146"
+      ],
+      "updatedAt": "2026-12-07T09:00:00Z"
+    },
+    {
+      "id": "pr5",
+      "displayId": "47",
+      "title": "Settlement scheduling",
+      "status": "MERGED",
+      "url": "https://github.com/northwind-pay/checkout-web/pull/47",
+      "author": {
+        "accountId": "p5",
+        "name": "Felix Shore"
+      },
+      "reviewers": [
+        {
+          "person": {
+            "accountId": "p6",
+            "name": "Ada Finch"
+          },
+          "approvalStatus": "APPROVED"
+        }
+      ],
+      "linesChanged": 80,
+      "repository": "checkout-web",
+      "issueKeys": [
+        "PAY-147"
+      ],
+      "updatedAt": "2026-12-07T09:00:00Z"
+    },
+    {
+      "id": "pr6",
+      "displayId": "48",
+      "title": "Refund receipt",
+      "status": "MERGED",
+      "url": "https://github.com/northwind-pay/payments-api/pull/48",
+      "author": {
+        "accountId": "p6",
+        "name": "Ada Finch"
+      },
+      "reviewers": [
+        {
+          "person": {
+            "accountId": "p7",
+            "name": "Leo Brook"
+          },
+          "approvalStatus": "APPROVED"
+        }
+      ],
+      "linesChanged": 80,
+      "repository": "payments-api",
+      "issueKeys": [
+        "PAY-148"
+      ],
+      "updatedAt": "2026-12-07T09:00:00Z"
+    },
+    {
+      "id": "pr7",
+      "displayId": "49",
+      "title": "Gateway failover",
+      "status": "MERGED",
+      "url": "https://github.com/northwind-pay/ledger-service/pull/49",
+      "author": {
+        "accountId": "p7",
+        "name": "Leo Brook"
+      },
+      "reviewers": [
+        {
+          "person": {
+            "accountId": "p0",
+            "name": "Mira Vale"
+          },
+          "approvalStatus": "APPROVED"
+        }
+      ],
+      "linesChanged": 80,
+      "repository": "ledger-service",
+      "issueKeys": [
+        "PAY-149"
+      ],
+      "updatedAt": "2026-12-07T09:00:00Z"
+    },
+    {
+      "id": "pr8",
+      "displayId": "50",
+      "title": "Correct rounding edge case",
+      "status": "MERGED",
+      "url": "https://github.com/northwind-pay/checkout-web/pull/50",
+      "author": {
+        "accountId": "p0",
+        "name": "Mira Vale"
+      },
+      "reviewers": [
+        {
+          "person": {
+            "accountId": "p1",
+            "name": "Owen Reed"
+          },
+          "approvalStatus": "APPROVED"
+        }
+      ],
+      "linesChanged": 80,
+      "repository": "checkout-web",
+      "issueKeys": [
+        "PAY-150"
+      ],
+      "updatedAt": "2026-12-07T09:00:00Z"
+    },
+    {
+      "id": "pr9",
+      "displayId": "51",
+      "title": "Hotfix release notes",
+      "status": "MERGED",
+      "url": "https://github.com/northwind-pay/payments-api/pull/51",
+      "author": {
+        "accountId": "p1",
+        "name": "Owen Reed"
+      },
+      "reviewers": [
+        {
+          "person": {
+            "accountId": "p2",
+            "name": "Nia Rowan"
+          },
+          "approvalStatus": "APPROVED"
+        }
+      ],
+      "linesChanged": 80,
+      "repository": "payments-api",
+      "issueKeys": [
+        "PAY-151"
+      ],
+      "updatedAt": "2026-12-07T09:00:00Z"
+    }
+  ],
+  "builds": [
+    {
+      "id": "b0",
+      "name": "payments-api #918",
+      "state": "FAILED",
+      "url": "https://ci.northwind-pay.example/build/0",
+      "issueKeys": [
+        "PAY-142"
+      ],
+      "updatedAt": "2026-12-09T09:00:00Z"
+    },
+    {
+      "id": "b1",
+      "name": "ledger-service #919",
+      "state": "FAILED",
+      "url": "https://ci.northwind-pay.example/build/1",
+      "issueKeys": [
+        "PAY-143"
+      ],
+      "updatedAt": "2026-12-09T09:00:00Z"
+    },
+    {
+      "id": "b2",
+      "name": "checkout-web #920",
+      "state": "SUCCESSFUL",
+      "url": "https://ci.northwind-pay.example/build/2",
+      "issueKeys": [
+        "PAY-144"
+      ],
+      "updatedAt": "2026-12-09T09:00:00Z"
+    },
+    {
+      "id": "b3",
+      "name": "payments-api #921",
+      "state": "SUCCESSFUL",
+      "url": "https://ci.northwind-pay.example/build/3",
+      "issueKeys": [
+        "PAY-145"
+      ],
+      "updatedAt": "2026-12-09T09:00:00Z"
+    },
+    {
+      "id": "b4",
+      "name": "ledger-service #922",
+      "state": "SUCCESSFUL",
+      "url": "https://ci.northwind-pay.example/build/4",
+      "issueKeys": [
+        "PAY-146"
+      ],
+      "updatedAt": "2026-12-09T09:00:00Z"
+    },
+    {
+      "id": "b5",
+      "name": "checkout-web #923",
+      "state": "SUCCESSFUL",
+      "url": "https://ci.northwind-pay.example/build/5",
+      "issueKeys": [
+        "PAY-147"
+      ],
+      "updatedAt": "2026-12-09T09:00:00Z"
+    },
+    {
+      "id": "b8",
+      "name": "checkout-web #924",
+      "state": "SUCCESSFUL",
+      "url": "https://ci.northwind-pay.example/build/8",
+      "issueKeys": [
+        "PAY-150"
+      ],
+      "updatedAt": "2026-12-09T09:00:00Z"
+    },
+    {
+      "id": "b9",
+      "name": "payments-api #925",
+      "state": "SUCCESSFUL",
+      "url": "https://ci.northwind-pay.example/build/9",
+      "issueKeys": [
+        "PAY-151"
+      ],
+      "updatedAt": "2026-12-09T09:00:00Z"
+    }
+  ],
+  "deployments": [
+    {
+      "id": "d0",
+      "name": "prod-eu #311",
+      "state": "ROLLED_BACK",
+      "environmentType": "PRODUCTION",
+      "environmentName": "Production",
+      "url": "https://deploy.northwind-pay.example/0",
+      "issueKeys": [
+        "PAY-142"
+      ],
+      "updatedAt": "2026-11-28T09:00:00Z"
+    },
+    {
+      "id": "d1",
+      "name": "staging-eu #312",
+      "state": "FAILED",
+      "environmentType": "STAGING",
+      "environmentName": "Staging",
+      "url": "https://deploy.northwind-pay.example/1",
+      "issueKeys": [
+        "PAY-143"
+      ],
+      "updatedAt": "2026-12-09T09:00:00Z"
+    },
+    {
+      "id": "d4",
+      "name": "staging-eu #313",
+      "state": "SUCCESSFUL",
+      "environmentType": "STAGING",
+      "environmentName": "Staging",
+      "url": "https://deploy.northwind-pay.example/4",
+      "issueKeys": [
+        "PAY-146"
+      ],
+      "updatedAt": "2026-12-09T09:00:00Z"
+    },
+    {
+      "id": "d5",
+      "name": "staging-eu #314",
+      "state": "SUCCESSFUL",
+      "environmentType": "STAGING",
+      "environmentName": "Staging",
+      "url": "https://deploy.northwind-pay.example/5",
+      "issueKeys": [
+        "PAY-147"
+      ],
+      "updatedAt": "2026-12-09T09:00:00Z"
+    },
+    {
+      "id": "d6",
+      "name": "staging-eu #315",
+      "state": "SUCCESSFUL",
+      "environmentType": "STAGING",
+      "environmentName": "Staging",
+      "url": "https://deploy.northwind-pay.example/6",
+      "issueKeys": [
+        "PAY-148"
+      ],
+      "updatedAt": "2026-12-09T09:00:00Z"
+    },
+    {
+      "id": "d7",
+      "name": "staging-eu #316",
+      "state": "SUCCESSFUL",
+      "environmentType": "STAGING",
+      "environmentName": "Staging",
+      "url": "https://deploy.northwind-pay.example/7",
+      "issueKeys": [
+        "PAY-149"
+      ],
+      "updatedAt": "2026-12-09T09:00:00Z"
+    },
+    {
+      "id": "d8",
+      "name": "staging-eu #317",
+      "state": "SUCCESSFUL",
+      "environmentType": "STAGING",
+      "environmentName": "Staging",
+      "url": "https://deploy.northwind-pay.example/8",
+      "issueKeys": [
+        "PAY-150"
+      ],
+      "updatedAt": "2026-12-09T09:00:00Z"
+    },
+    {
+      "id": "d9",
+      "name": "staging-eu #318",
+      "state": "SUCCESSFUL",
+      "environmentType": "STAGING",
+      "environmentName": "Staging",
+      "url": "https://deploy.northwind-pay.example/9",
+      "issueKeys": [
+        "PAY-151"
+      ],
+      "updatedAt": "2026-12-09T09:00:00Z"
+    }
+  ],
+  "pages": [
+    {
+      "id": "page0",
+      "title": "Refunds runbook",
+      "url": "https://northwind-pay.example/wiki/pages/0",
+      "lastUpdatedAt": "2026-07-23T09:00:00Z",
+      "owner": {
+        "accountId": "p0",
+        "name": "Mira Vale"
+      },
+      "kind": "runbook",
+      "linkedIssueKeys": [
+        "PAY-142",
+        "PAY-146"
+      ]
+    },
+    {
+      "id": "page1",
+      "title": "ADR-017 Idempotency keys for refunds",
+      "url": "https://northwind-pay.example/wiki/pages/1",
+      "lastUpdatedAt": "2026-12-08T09:00:00Z",
+      "owner": {
+        "accountId": "p1",
+        "name": "Owen Reed"
+      },
+      "kind": "decision",
+      "linkedIssueKeys": [
+        "PAY-142"
+      ]
+    },
+    {
+      "id": "page2",
+      "title": "Checkout retry design RFC",
+      "url": "https://northwind-pay.example/wiki/pages/2",
+      "lastUpdatedAt": "2026-12-08T09:00:00Z",
+      "owner": {
+        "accountId": "p2",
+        "name": "Nia Rowan"
+      },
+      "kind": "design",
+      "linkedIssueKeys": [
+        "PAY-144"
+      ]
+    },
+    {
+      "id": "page3",
+      "title": "Release notes template",
+      "url": "https://northwind-pay.example/wiki/pages/3",
+      "lastUpdatedAt": "2026-12-08T09:00:00Z",
+      "owner": {
+        "accountId": "p3",
+        "name": "Theo Moss"
+      },
+      "kind": "other",
+      "linkedIssueKeys": [
+        "PAY-148"
+      ]
+    },
+    {
+      "id": "page4",
+      "title": "Hotfix playbook",
+      "url": "https://northwind-pay.example/wiki/pages/4",
+      "lastUpdatedAt": "2026-12-08T09:00:00Z",
+      "owner": {
+        "accountId": "p4",
+        "name": "Iris Lane"
+      },
+      "kind": "runbook",
+      "linkedIssueKeys": [
+        "PAY-150",
+        "PAY-151"
+      ]
+    },
+    {
+      "id": "page5",
+      "title": "Settlement operations",
+      "url": "https://northwind-pay.example/wiki/pages/5",
+      "lastUpdatedAt": "2026-12-08T09:00:00Z",
+      "owner": {
+        "accountId": "p5",
+        "name": "Felix Shore"
+      },
+      "kind": "other",
+      "linkedIssueKeys": [
+        "PAY-147"
+      ]
+    }
+  ],
+  "incidents": [
+    {
+      "key": "INC-7",
+      "summary": "Duplicate refunds under retry load",
+      "status": "Investigating",
+      "linkedIssueKeys": [
+        "PAY-142"
+      ],
+      "createdAt": "2026-12-09T09:00:00Z",
+      "url": "https://northwind-pay.example/browse/INC-7"
+    }
+  ],
+  "versions": [
+    {
+      "projectKey": "PAY",
+      "name": "2.4.0",
+      "id": "240",
+      "issueKeys": [
+        "PAY-142",
+        "PAY-143",
+        "PAY-144",
+        "PAY-145",
+        "PAY-146",
+        "PAY-147",
+        "PAY-148",
+        "PAY-149"
+      ]
+    },
+    {
+      "projectKey": "PAY",
+      "name": "2.3.1",
+      "id": "231",
+      "issueKeys": [
+        "PAY-150",
+        "PAY-151"
+      ]
+    }
+  ],
+  "commits": [
+    {
+      "id": "c8f12ab",
+      "issueKeys": [
+        "PAY-142"
+      ]
+    },
+    {
+      "id": "e1b9a42",
+      "issueKeys": [
+        "PAY-142"
+      ]
+    },
+    {
+      "id": "4d921fe",
+      "issueKeys": [
+        "PAY-143"
+      ]
+    }
+  ]
+}

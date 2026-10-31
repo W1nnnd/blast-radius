@@ -1,45 +1,93 @@
+/** Forge entry points wiring user-scoped transports to the shared analysis service. */
+import api, { route } from '@forge/api';
 import Resolver from '@forge/resolver';
-import { getGraphContext, CHANGE_CONTEXT_QUERY, RELEASE_RISK_QUERY, EXPERTS_QUERY } from './twg.js';
-import { scoreRisk } from './risk.js';
-
-function input(payload, key) {
-  const value = payload?.[key];
-  if (typeof value !== 'string' || !value.trim() || value.length > 255)
-    throw new Error(`${key} must be a non-empty string of at most 255 characters.`);
-  return value.trim();
+import { createAdapter } from './graph/adapter.js';
+import { QUERY_KEYS } from './graph/queryKeys.js';
+import { createJiraRest } from './jira/jiraRest.js';
+import { createService } from './service.js';
+import { createHandlers } from './handlers.js';
+function handlers(context = {}) {
+  const jira = createJiraRest({
+    request: (...args) => api.asUser().requestJira(...args),
+    route,
+    cloudId: context.cloudId ?? context.extension?.cloudId
+  });
+  const adapter = createAdapter(
+    process.env,
+    {
+      jira,
+      queryKeys: QUERY_KEYS,
+      request: async (query, variables) => {
+        const response = await api.asUser().requestTeamworkGraph(query, variables);
+        if (response.ok === false) {
+          throw new Error('Graph unavailable');
+        }
+        return response.json();
+      }
+    }
+  );
+  const panelJira = adapter.mode === 'fixture'
+    ? {
+      resolveIssue: async key => {
+        const issue = await adapter.resolveIssue(key);
+        return {
+          ...issue,
+          projectKey: 'PAY',
+          fixVersions: [{
+            name: issue.version
+          }]
+        };
+      }
+    }
+    : jira;
+  return createHandlers({
+    service: createService(adapter),
+    jira: panelJira
+  });
 }
-// Bound every list and string as well as total output; never return a raw graph response.
-function bounded(value) {
-  const clean = item => {
-    if (typeof item === 'string') return item.slice(0, 2000);
-    if (Array.isArray(item)) return item.slice(0, 25).map(clean);
-    if (item && typeof item === 'object') return Object.fromEntries(Object.entries(item).map(([k, v]) => [k, clean(v)]));
-    return item;
-  };
-  const result = clean(value);
-  if (JSON.stringify(result).length > 500000) throw new Error('Graph result exceeded the response limit.');
-  return result;
+async function call(name, payload, context) {
+  try {
+    // Rovo/MCP actions carry cloudId in payload.context; UI resolvers carry it in context.
+    const cloudId = context?.cloudId ?? payload?.context?.cloudId;
+    return await handlers({ ...context, cloudId })[name](payload, context);
+  } catch {
+    return {
+      error: {
+        code: 'UNAVAILABLE',
+        message: 'Unable to initialize analysis. Check configuration.'
+      }
+    };
+  }
 }
-const report = graph => bounded({ ...graph, risk: scoreRisk(graph),
-  experts: graph.owners || [], empty: !Object.values(graph).some(nodes => nodes.length),
-  limitations: 'Skeleton queries return IDs and types only. Risk inputs require verified graph field mappings; a low score does not establish release safety.' });
-
+/** Analyze an issue using the shared permission-aware service. */
 export async function getChangeContext(payload, context) {
-  return report(await getGraphContext(CHANGE_CONTEXT_QUERY, { issueKey: input(payload, 'issueKey') }));
+  return call('getChangeContext', payload, context);
 }
+/** Analyze a release using the shared permission-aware service. */
 export async function scoreReleaseRisk(payload, context) {
-  return report(await getGraphContext(RELEASE_RISK_QUERY, {
-    versionName: input(payload, 'versionName'), projectKey: input(payload, 'projectKey'),
-  }));
+  return call('scoreReleaseRisk', payload, context);
 }
+/** Find people with evidence of related contributions. */
 export async function findExperts(payload, context) {
-  const graph = await getGraphContext(EXPERTS_QUERY, { issueKey: input(payload, 'issueKey') });
-  return bounded({ experts: graph.owners || [], teams: graph.teams || [],
-    issues: graph.issues || [], pages: graph.pages || [], empty: !graph.owners?.length });
+  return call('findExperts', payload, context);
+}
+/** Generate concrete release actions from observed risk evidence. */
+export async function generateReleaseChecklist(payload, context) {
+  return call('generateReleaseChecklist', payload, context);
 }
 const resolver = new Resolver();
-resolver.define('getPanelData', async ({ context }) => {
-  const issueKey = context?.extension?.issue?.key;
-  return getChangeContext({ issueKey }, context);
-});
+resolver.define(
+  'getPanelData',
+  ({
+    payload,
+    context
+  }) => call('getPanelData', payload, context)
+);
+resolver.define(
+  'getReleaseData',
+  ({
+    payload,
+    context
+  }) => call('getReleaseData', payload, context)
+);
 export const handler = resolver.getDefinitions();

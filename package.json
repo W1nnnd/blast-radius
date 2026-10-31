@@ -8,7 +8,12 @@
     "node": ">=22 <25"
   },
   "scripts": {
-    "test": "node --test test/"
+    "validate:manifest": "node scripts/validate-manifest.mjs",
+    "test": "node --test --test-isolation=none test/*.test.js",
+    "build:demo": "node scripts/build-demo-data.mjs",
+    "seed:plan": "node scripts/seed-demo-site.mjs --dry-run",
+    "queries:plan": "node scripts/register-persisted-queries.mjs --dry-run",
+    "lint:forge": "forge lint"
   },
   "dependencies": {
     "@forge/api": "latest",
