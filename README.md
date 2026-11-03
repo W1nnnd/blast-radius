@@ -4,7 +4,7 @@
 >
 > Status (2026-11-03 15:45 SGT): production app **2.0.0** deployed and installed in Jira + Confluence on
 > `one-atlas-wdon.atlassian.net`, alongside development **2.4.0**; **141 tests**. Browser verification remains TODO.
-> Judges’ sharing link generation is pending. See [deployment status](docs/DEPLOY_STATUS.md).
+> Production distribution is **Sharing** (anyone with the link). See [deployment status](docs/DEPLOY_STATUS.md).
 
 Before every release an engineering lead has to answer three questions:
 **What could this break? Who knows this code? What did we already decide or learn the hard way?**
@@ -25,7 +25,7 @@ Public source: [W1nnnd/blast-radius](https://github.com/W1nnnd/blast-radius), br
 
 Production **2.0.0** is deployed with `BLAST_RADIUS_DATA_SOURCE=twg` and installed in Jira + Confluence on `one-atlas-wdon.atlassian.net`. Development **2.4.0** remains installed on the same site; both environments co-exist.
 
-Judges’ installation link: **TODO — generate in the developer console**. See [deployment status](docs/DEPLOY_STATUS.md) for the distribution steps.
+**Install:** [Install Blast Radius (Jira + Confluence)](https://developer.atlassian.com/console/install/71f0dc36-ccf4-4d78-88d0-882f02159e9e?signature=AYABeEC%2FquugkMsvNi4Q7nmrOQcAAAADAAdhd3Mta21zAEthcm46YXdzOmttczp1cy13ZXN0LTI6NzA5NTg3ODM1MjQzOmtleS83MDVlZDY3MC1mNTdjLTQxYjUtOWY5Yi1lM2YyZGNjMTQ2ZTcAuAECAQB4CxqLTo9l4lqXuFjNim1xJM%2Bp%2F3TVP9xHS2BrU5DRRucB1%2BJ2sKS%2FiGZjMTu24%2FfDPgAAAH4wfAYJKoZIhvcNAQcGoG8wbQIBADBoBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDAgRKouexwBl7hFEdAIBEIA71ZRwJmmI8Yj%2BkOwCEa74hIr%2BDM9JkRnFqGZA2h2908ktHUV%2FZFwddD6ZwM3qlb18xk9q%2FLyhQ5dF7fMAB2F3cy1rbXMAS2Fybjphd3M6a21zOmV1LXdlc3QtMTo3MDk1ODc4MzUyNDM6a2V5LzQ2MzBjZTZiLTAwYzMtNGRlMi04NzdiLTYyN2UyMDYwZTVjYwC4AQICAHi9bVMAkme4qVQX1fQHo6ePw3H40A7cGfz7yrmSfBWMXgGBHpzSSMl6ujKbhtb8iqTZAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMJvsXT6yOk58RqcamAgEQgDvmQkuu%2Fku92GPq0wM3Dn8jRRbLu4PNVi8OQa%2B69v6Th%2B%2F05ETRLhJ8orYISi%2FjwtodcEyZfMGjeCDT5AAHYXdzLWttcwBLYXJuOmF3czprbXM6dXMtZWFzdC0xOjcwOTU4NzgzNTI0MzprZXkvNmMxMjBiYTAtNGNkNS00OTg1LWI4MmUtNDBhMDQ5NTJjYzU3ALgBAgIAeDYASx0XCjkny4iLV6vz%2BKtEGSGT6kdt0QRpkn6D%2FlVEAQxZt0EA9AWKXRENiqodsK8AAAB%2BMHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyRjMS7rsSk4bNigwICARCAO21WTrB9mtgKtRe7mh7ajV84qGQ51TRJP7vs3JOsaak4tSFtXrAANGJKWAbpEmPa%2BXza2D9Zf%2BcgWmtsAgAAAAAMAAAQAAAAAAAAAAAAAAAAADe9vyO6jXeBEtFTgo1PVN3%2F%2F%2F%2F%2FAAAAAQAAAAAAAAAAAAAAAQAAADJodzFHBml8DIJfK4hoi2iG8TGoQxYU6rQEAPzXSPpBLK%2BTshD%2FALI6YMNFBzSY6A99snKSGZnPJ90rJS0T0INvNXc%3D&product=jira&product=confluence). The installing user must be a site admin and should install the production app on **both Jira and Confluence**. Distribution is **Sharing** (anyone with the link). See [deployment status](docs/DEPLOY_STATUS.md).
 
 ## One engine, three surfaces
 | Surface | Manifest module | For |
@@ -104,7 +104,7 @@ Rovo Chat: choose agent **Blast Radius**, then ask **"Can we ship PAY 2.4.0?"**.
 - No dev-tool connector on this site: remote links are seeded context, not proof of live CI or deployment synchronization. Empty graph results do not prove that no risks exist.
 - A persisted page query returned an internal error during setup; failures remain visible in coverage. Later TWG reads returned two pages, which does not establish that every query is healthy.
 - Browser verification of the current panel, release view and Rovo response is TODO. MCP verification is TODO after admin enablement.
-- Judges’ installation/sharing link generation and video URL are TODO.
+- Video URL is TODO.
 
 ## Screenshots (TODO: capture from the live development UI)
 
@@ -127,6 +127,14 @@ TODO: MCP client after tools are enabled.
 `manifest.yml` · `src/` (index → handlers → service → engine / graph / jira) · `src/frontend/index.jsx` (UI Kit) ·
 `prompts/agent-prompt.txt` · `skills/blast-radius/SKILL.md` · `scripts/` · `demo/seed/` · `test/` · `docs/`
 ([Devpost text](docs/DEVPOST_SUBMISSION.md), [video script](docs/DEMO_VIDEO_SCRIPT.md), [deploy runbook](docs/DEPLOY_AFTER_LOGIN.md)).
+
+## Privacy
+
+Blast Radius runs on Atlassian Forge and is Runs on Atlassian eligible. It reads Jira issues, versions, issue links and remote links, plus Teamwork Graph data (including Confluence pages linked to issues), as the requesting user via `api.asUser`; results are filtered by that user’s permissions.
+
+The app is read-only. Its manifest declares these scopes: `read:jira-work`, `read:graph:issue:jira`, `read:graph:project:jira`, `read:graph:version:jira`, `read:graph:page:confluence`, `read:graph:user:atlassian`, `read:graph:team:atlassian`, `read:graph:pull-request:external`, `read:graph:commit:external`, `read:graph:deployment:external`, `read:graph:build:external`, `read:graph:priority:jira`, and `read:graph:issue-status:jira`. There is no `permissions.external` declaration or external egress; the app sends no data outside Atlassian. It uses no Forge storage and stores no personal data.
+
+Scoring is deterministic and uses no LLM. Rovo agent and MCP responses are produced on request. App-written Forge logs contain only per-source error codes/classifications and HTTP status, a sanitized, identifier-redacted error message of at most 160 characters, evidence counts, and release-analysis duration/verdict; the app does not log issue content or personal data. Contact us through [GitHub issues](https://github.com/W1nnnd/blast-radius/issues).
 
 ## License
 

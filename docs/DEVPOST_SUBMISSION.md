@@ -1,6 +1,6 @@
 # Devpost submission — Blast Radius
 
-Category: **Apps for Software Teams**. Status as of **2026-11-03 15:45 SGT**: production **2.0.0** is deployed and installed in Jira + Confluence on the demo site, `one-atlas-wdon.atlassian.net`; judges’ sharing link generation is pending. Development **2.4.0** remains installed on the same site alongside production.
+Category: **Apps for Software Teams**. Status as of **2026-11-03 15:45 SGT**: production **2.0.0** is deployed and installed in Jira + Confluence on the demo site, `one-atlas-wdon.atlassian.net`; production distribution is **Sharing** (anyone with the link). Development **2.4.0** remains installed on the same site alongside production.
 
 ## Project name
 Blast Radius
@@ -44,7 +44,7 @@ We deployed development version 2.4.0 in Jira and Confluence, applied a coherent
 A graph integration needs to explain empty results and failures as carefully as successful results. Connector availability, query registration, operation naming and runtime packaging all affect whether evidence reaches the user. Coverage is part of the decision, and seeded remote links must remain distinguishable from connected dev-tool data.
 
 ## What's next
-Complete browser verification of the panel, release analysis and Rovo flow; enable and verify MCP tools; generate the judges’ sharing link in the developer console. Connect a dev tool to validate graph-backed PR/build/deployment evidence. Future ideas include release-gate automation and additional component signals; these are not shipped claims.
+Complete browser verification of the panel, release analysis and Rovo flow; enable and verify MCP tools. Connect a dev tool to validate graph-backed PR/build/deployment evidence. Future ideas include release-gate automation and additional component signals; these are not shipped claims.
 
 ## Built with
 Forge, UI Kit, Jira, Confluence, Rovo, Atlassian MCP, Teamwork Graph, JavaScript, Node.js, GraphQL, Cypher.
@@ -61,9 +61,9 @@ Blast Radius is a Forge app integrating Jira issue context and REST, Teamwork Gr
 
 ## Installation link & testing instructions (for judges)
 
-**Installation/sharing link: TODO — generate in the developer console.** Production **2.0.0** is deployed and installed in Jira + Confluence alongside development **2.4.0** on the demo site; judge access has not been established. See [deployment status](DEPLOY_STATUS.md) for the distribution steps.
+**Production installation:** [Install Blast Radius (Jira + Confluence)](https://developer.atlassian.com/console/install/71f0dc36-ccf4-4d78-88d0-882f02159e9e?signature=AYABeEC%2FquugkMsvNi4Q7nmrOQcAAAADAAdhd3Mta21zAEthcm46YXdzOmttczp1cy13ZXN0LTI6NzA5NTg3ODM1MjQzOmtleS83MDVlZDY3MC1mNTdjLTQxYjUtOWY5Yi1lM2YyZGNjMTQ2ZTcAuAECAQB4CxqLTo9l4lqXuFjNim1xJM%2Bp%2F3TVP9xHS2BrU5DRRucB1%2BJ2sKS%2FiGZjMTu24%2FfDPgAAAH4wfAYJKoZIhvcNAQcGoG8wbQIBADBoBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDAgRKouexwBl7hFEdAIBEIA71ZRwJmmI8Yj%2BkOwCEa74hIr%2BDM9JkRnFqGZA2h2908ktHUV%2FZFwddD6ZwM3qlb18xk9q%2FLyhQ5dF7fMAB2F3cy1rbXMAS2Fybjphd3M6a21zOmV1LXdlc3QtMTo3MDk1ODc4MzUyNDM6a2V5LzQ2MzBjZTZiLTAwYzMtNGRlMi04NzdiLTYyN2UyMDYwZTVjYwC4AQICAHi9bVMAkme4qVQX1fQHo6ePw3H40A7cGfz7yrmSfBWMXgGBHpzSSMl6ujKbhtb8iqTZAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMJvsXT6yOk58RqcamAgEQgDvmQkuu%2Fku92GPq0wM3Dn8jRRbLu4PNVi8OQa%2B69v6Th%2B%2F05ETRLhJ8orYISi%2FjwtodcEyZfMGjeCDT5AAHYXdzLWttcwBLYXJuOmF3czprbXM6dXMtZWFzdC0xOjcwOTU4NzgzNTI0MzprZXkvNmMxMjBiYTAtNGNkNS00OTg1LWI4MmUtNDBhMDQ5NTJjYzU3ALgBAgIAeDYASx0XCjkny4iLV6vz%2BKtEGSGT6kdt0QRpkn6D%2FlVEAQxZt0EA9AWKXRENiqodsK8AAAB%2BMHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyRjMS7rsSk4bNigwICARCAO21WTrB9mtgKtRe7mh7ajV84qGQ51TRJP7vs3JOsaak4tSFtXrAANGJKWAbpEmPa%2BXza2D9Zf%2BcgWmtsAgAAAAAMAAAQAAAAAAAAAAAAAAAAADe9vyO6jXeBEtFTgo1PVN3%2F%2F%2F%2F%2FAAAAAQAAAAAAAAAAAAAAAQAAADJodzFHBml8DIJfK4hoi2iG8TGoQxYU6rQEAPzXSPpBLK%2BTshD%2FALI6YMNFBzSY6A99snKSGZnPJ90rJS0T0INvNXc%3D&product=jira&product=confluence). The installing user must be a site admin and should install on **both Jira and Confluence**. Production **2.0.0** is deployed and installed in Jira + Confluence alongside development **2.4.0** on the demo site; judge access has not been established. Distribution is **Sharing** (anyone with the link); see [deployment status](DEPLOY_STATUS.md).
 
-Once access to the seeded demo site is arranged:
+Install via the link on a site with **Jira + Confluence**, then open a Jira issue → **Apps → Blast Radius** and analyze an issue or release with evidence available to your user. Alternatively, once access to the seeded demo site is arranged, use the demo below (the PAY examples and scores apply to that site):
 
 1. Open [PAY-1](https://one-atlas-wdon.atlassian.net/browse/PAY-1) → **Apps → Blast Radius**. Expect approximately **HOLD 67/100**; inspect failed CI and incident PAY-11.
 2. Open **Evidence**. Check provenance labels, including **“Jira remote link (not Teamwork Graph)”**, and coverage notes for unavailable sources. No dev-tool connector is installed.
@@ -75,6 +75,6 @@ For offline inspection, see [release preview](../demo/live-preview-release-2.4.0
 
 ## Links
 
-- Installation/sharing link: **TODO**.
+- Installation/sharing link: [Install Blast Radius (Jira + Confluence)](https://developer.atlassian.com/console/install/71f0dc36-ccf4-4d78-88d0-882f02159e9e?signature=AYABeEC%2FquugkMsvNi4Q7nmrOQcAAAADAAdhd3Mta21zAEthcm46YXdzOmttczp1cy13ZXN0LTI6NzA5NTg3ODM1MjQzOmtleS83MDVlZDY3MC1mNTdjLTQxYjUtOWY5Yi1lM2YyZGNjMTQ2ZTcAuAECAQB4CxqLTo9l4lqXuFjNim1xJM%2Bp%2F3TVP9xHS2BrU5DRRucB1%2BJ2sKS%2FiGZjMTu24%2FfDPgAAAH4wfAYJKoZIhvcNAQcGoG8wbQIBADBoBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDAgRKouexwBl7hFEdAIBEIA71ZRwJmmI8Yj%2BkOwCEa74hIr%2BDM9JkRnFqGZA2h2908ktHUV%2FZFwddD6ZwM3qlb18xk9q%2FLyhQ5dF7fMAB2F3cy1rbXMAS2Fybjphd3M6a21zOmV1LXdlc3QtMTo3MDk1ODc4MzUyNDM6a2V5LzQ2MzBjZTZiLTAwYzMtNGRlMi04NzdiLTYyN2UyMDYwZTVjYwC4AQICAHi9bVMAkme4qVQX1fQHo6ePw3H40A7cGfz7yrmSfBWMXgGBHpzSSMl6ujKbhtb8iqTZAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMJvsXT6yOk58RqcamAgEQgDvmQkuu%2Fku92GPq0wM3Dn8jRRbLu4PNVi8OQa%2B69v6Th%2B%2F05ETRLhJ8orYISi%2FjwtodcEyZfMGjeCDT5AAHYXdzLWttcwBLYXJuOmF3czprbXM6dXMtZWFzdC0xOjcwOTU4NzgzNTI0MzprZXkvNmMxMjBiYTAtNGNkNS00OTg1LWI4MmUtNDBhMDQ5NTJjYzU3ALgBAgIAeDYASx0XCjkny4iLV6vz%2BKtEGSGT6kdt0QRpkn6D%2FlVEAQxZt0EA9AWKXRENiqodsK8AAAB%2BMHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyRjMS7rsSk4bNigwICARCAO21WTrB9mtgKtRe7mh7ajV84qGQ51TRJP7vs3JOsaak4tSFtXrAANGJKWAbpEmPa%2BXza2D9Zf%2BcgWmtsAgAAAAAMAAAQAAAAAAAAAAAAAAAAADe9vyO6jXeBEtFTgo1PVN3%2F%2F%2F%2F%2FAAAAAQAAAAAAAAAAAAAAAQAAADJodzFHBml8DIJfK4hoi2iG8TGoQxYU6rQEAPzXSPpBLK%2BTshD%2FALI6YMNFBzSY6A99snKSGZnPJ90rJS0T0INvNXc%3D&product=jira&product=confluence).
 - Video URL: **TODO**.
 - Repository URL: [W1nnnd/blast-radius](https://github.com/W1nnnd/blast-radius) (public, `main`, MIT).
