@@ -132,7 +132,7 @@ export const RISK_CASES = [
       pullRequests: [pr({
         reviewers: [{
           person: ada,
-          approvalStatus: 'APPROVED'
+          approvalStatus: 'UNAPPROVED'
         }]
       })]
     },

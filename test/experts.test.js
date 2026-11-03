@@ -123,3 +123,19 @@ test(
     assert.equal(expert.lastActiveAt, now);
   }
 );
+
+test('review suggestions prefer linked owners and repository contributors over unrelated experts', async () => {
+  const {suggestReviewer} = await import('../src/engine/experts.js');
+  const owner = {accountId: 'owner', name: 'Owner'};
+  const unrelated = {accountId: 'unrelated', name: 'Unrelated'};
+  const request = pr({issueKeys: ['PAY-1'], reviewers: [], author: ada});
+  const context = {...base(), people: [ada, unrelated],
+    issues: [{key: 'PAY-1', assignee: owner}],
+    pages: Array.from({length: 10}, () => ({owner: unrelated, lastUpdatedAt: now})),
+    pullRequests: [request, pr({author: ben, reviewers: []})]};
+  assert.equal(suggestReviewer(context, request, new Map(), now).person.accountId, owner.accountId);
+  context.issues[0].assignee = ada;
+  assert.equal(suggestReviewer(context, request, new Map(), now).person.accountId, ben.accountId);
+  request.assignee = ben;
+  assert.equal(suggestReviewer(context, request, new Map(), now).person.accountId, unrelated.accountId);
+});

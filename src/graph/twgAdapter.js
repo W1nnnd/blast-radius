@@ -1,3 +1,5 @@
+import {dedupePages} from './pageIdentity.js';
+import {remoteLinkEvidence} from '../jira/remoteLinkEvidence.js';
 /** Bounded curated and persisted TWG reads with explicit visibility coverage. */
 import { curatedQuery, CUSTOM_QUERY } from './queries.js';
 import { parseColumns } from './parse.js';
@@ -168,6 +170,11 @@ export function createTwgAdapter({
           linkedIssueKeys: [ref.key], createdAt: ''
         })
       };
+      const remotePromise = jira.getRemoteLinks
+        ? Promise.resolve().then(() => jira.getRemoteLinks(ref.key)).then(links => remoteLinkEvidence(links, ref.key)).catch(() => {
+          context.coverage.remoteLinks = {available: false, reason: 'Jira remote links unavailable'};
+          return {};
+        }) : Promise.resolve({});
       const results = await Promise.all(Object.entries(sources).map(async ([source, normalize]) => {
         try {
           const nodes = await readSource(source, ref.ari, context.coverage,
@@ -180,6 +187,18 @@ export function createTwgAdapter({
       }));
       const {blockers: graphBlockers, ...collections} = Object.fromEntries(results);
       Object.assign(context, collections);
+      const remote = await remotePromise;
+      for (const source of ['pullRequests', 'builds', 'deployments', 'pages']) {
+        if (!context[source].length && remote[source]) {
+          context[source] = remote[source];
+          context.coverage[source] = {available: true, via: 'jira-remote-link',
+            reason: 'Teamwork Graph had no dev-tool data; Jira remote links checked'};
+        }
+      }
+      context.pages = dedupePages([...context.pages, ...(remote.pages ?? [])]);
+      if (!context.incidents.length) context.incidents = (ref.incidents ?? []).map(node => ({
+        ...normalizeIssue(node), linkedIssueKeys: [ref.key], createdAt: ''
+      }));
       issue.blockers = graphBlockers.length ? graphBlockers : (ref.blockers ?? []).map(normalizeIssue);
       const people = [
         issue.assignee,

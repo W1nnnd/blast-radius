@@ -25,6 +25,7 @@ export const pageKind = (title, labels = []) => {
 export const evidence = (type, object) => {
   return {
     type,
+    ...(object.source ? {source: object.source, evidenceLabel: object.evidenceLabel} : {}),
     id: String(object.id ?? object.key ?? 'unknown'),
     label: type === 'pullRequest'
       ? `#${object.displayId ?? object.id} ${object.title ?? ''}`.trim()

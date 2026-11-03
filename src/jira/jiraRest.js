@@ -18,6 +18,7 @@ export function createJiraRest({
     return `ari:cloud:jira:${cloudId}:${type}/${id}`;
   };
   return {
+    getRemoteLinks: key => get(route`/rest/api/3/issue/${key}/remotelink`),
     async resolveIssue(key) {
       const issue = await get(
         route`/rest/api/3/issue/${key}?fields=summary,status,priority,issuetype,assignee,fixVersions,labels,project,issuelinks`
@@ -49,6 +50,11 @@ export function createJiraRest({
             summary: link.inwardIssue.fields?.summary,
             status: link.inwardIssue.fields?.status
           })),
+        incidents: (fields.issuelinks ?? []).flatMap(link => {
+          const linked = link.inwardIssue ?? link.outwardIssue;
+          return linked && (/\[INCIDENT\]/i.test(linked.fields?.summary ?? '') || linked.fields?.labels?.includes('incident'))
+            ? [{key: linked.key, ...linked.fields}] : [];
+        }),
         projectKey: fields.project?.key
       };
     },
@@ -69,7 +75,7 @@ export function createJiraRest({
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              jql: `project = "${projectKey.replace(/["\\]/g, '')}" AND fixVersion = ${JSON.stringify(String(value.id))}`,
+              jql: `project = "${projectKey.replace(/["\\]/g, '')}" AND fixVersion = ${JSON.stringify(String(name))}`,
               fields: ['key'],
               maxResults: 25,
               ...(nextPageToken ? {

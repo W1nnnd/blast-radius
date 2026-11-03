@@ -71,7 +71,7 @@ for (const [name, request] of [
     assert.equal(result.verdict, 'INSUFFICIENT_EVIDENCE');
     assert.ok(result.risk.signals.some(signal => signal.id === 'blocked-PAY-142:PAY-150'));
     assert.deepEqual(result.releaseOptions, [{projectKey: 'PAY', name: '1.0'}]);
-    assert.equal(reads, 1);
+    assert.equal(reads, 2); // Subject plus one remote-link fallback read.
     for (const source of ['pullRequests', 'deployments', 'builds', 'pages', 'commits', 'blockers', 'incidents', 'people']) {
       assert.equal(result.coverage[source].available, false, source);
       assert.ok(result.coverage[source].reason);

@@ -67,7 +67,8 @@ export const MATCHERS = {
       return request.reviewers?.some(reviewer => reviewer.person?.accountId && !authors.has(reviewer.person.accountId));
     });
     return context.pullRequests.length && authors.size === 1 && !independent
-      ? [context.pullRequests[0]]
+      ? context.pullRequests.filter(request => active(request) &&
+        !request.reviewers?.some(reviewer => reviewer.approvalStatus === 'APPROVED')).slice(0, 1)
       : [];
   },
   "no-team": context => context.teams.length ? [] : [anchor(context)],

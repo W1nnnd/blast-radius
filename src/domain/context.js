@@ -32,10 +32,18 @@ export function mergeContexts(contexts, subject) {
   const sources = new Set(contexts.flatMap(context => Object.keys(context.coverage ?? {})));
   for (const source of sources) {
     const states = contexts.map(context => context.coverage?.[source]);
-    merged.coverage[source] = states.every(state => state?.available) ? {available: true} : {
-      available: false,
-      reason: states.find(state => !state?.available)?.reason ?? 'incomplete issue coverage'
+    const remote = states.some(state => state?.via === 'jira-remote-link');
+    const via = remote ? 'jira-remote-link' : states.find(state => state?.via)?.via;
+    merged.coverage[source] = {
+      ...(states.every(state => state?.available) ? {available: true} : {
+        available: false,
+        reason: states.find(state => !state?.available)?.reason ?? 'incomplete issue coverage'
+      }),
+      ...(via ? {via} : {})
     };
+    if (remote && merged.coverage[source].available) {
+      merged.coverage[source].reason = 'Teamwork Graph had no dev-tool data; Jira remote links checked';
+    }
   }
   return merged;
 }

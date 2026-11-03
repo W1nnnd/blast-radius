@@ -1,3 +1,4 @@
+import {evidence} from './domain/model.js';
 /** Shared application service used by Forge actions, MCP and the issue panel. */
 import {sortSignals, releaseSummary} from './engine/summary.js';
 import {scoreRisk} from './engine/risk.js';
@@ -54,6 +55,8 @@ export function createService(adapter, {
       coverage: {...computeCoverage(context), ...context.coverage},
       counts: Object.fromEntries(COLLECTIONS.filter(name => !['people', 'teams'].includes(name))
         .map(name => [name, (context[name] ?? []).length])),
+      evidence: ['pullRequests', 'builds', 'deployments', 'pages'].flatMap(source =>
+        (context[source] ?? []).map(item => evidence(source === 'pullRequests' ? 'pullRequest' : source.slice(0, -1), item))),
       generatedAt,
       disclaimer: adapter.mode === 'fixture'
         ? 'Demo data — fictional Northwind Pay evidence.'
@@ -66,7 +69,15 @@ export function createService(adapter, {
     const version = await adapter.resolveVersion(projectKey, name);
     const issues = await adapter.getReleaseIssues(version.ari, version);
     const contexts = [];
-    for (const issue of issues.slice(0, 25)) contexts.push(await issueContext(issue.key));
+    const limited = issues.slice(0, 25);
+    let cursor = 0;
+    await Promise.all(Array.from({length: Math.min(5, limited.length)}, async () => {
+      while (cursor < limited.length) {
+        const index = cursor++;
+        const issue = limited[index];
+        contexts[index] = await issueContext(issue.key, issue.ari ? issue : undefined);
+      }
+    }));
     const context = mergeContexts(contexts, {
       type: 'release', key: `${projectKey}:${name}`, name: `${projectKey} ${name}`
     });
@@ -81,7 +92,13 @@ export function createService(adapter, {
   };
   return {
     analyzeIssue: async (key, ref) => report(await issueContext(key, ref)),
-    analyzeRelease: async (projectKey, version) => report(await releaseContext(projectKey, version)),
+    analyzeRelease: async (projectKey, version) => {
+      const start = Date.now();
+      const result = report(await releaseContext(projectKey, version));
+      console.info(`[blast-radius] release analyzed ${JSON.stringify({issues: result.counts.issues,
+        durationMs: Date.now() - start, verdict: result.verdict})}`);
+      return result;
+    },
     findExperts: async key => report(await issueContext(key)),
     releaseChecklist: async (projectKey, version, format = 'markdown') => {
       const result = report(await releaseContext(projectKey, version));

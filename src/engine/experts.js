@@ -62,7 +62,12 @@ export function suggestReviewer(context, pullRequest, loads, now) {
     ...expert,
     affinity: 0
   }]));
-  for (const person of context.people ?? []) {
+  const owners = (context.issues ?? []).filter(issue => pullRequest.issueKeys?.includes(issue.key))
+    .map(issue => issue.assignee).filter(person => person?.accountId);
+  const repoPeople = (context.pullRequests ?? []).filter(other => other.repository &&
+    other.repository === pullRequest.repository).flatMap(other =>
+    [other.author, ...(other.reviewers ?? []).map(reviewer => reviewer.person)]);
+  for (const person of [...owners, ...repoPeople, ...(context.people ?? [])].filter(person => person?.accountId)) {
     if (person.accountId !== pullRequest.author?.accountId &&
       !candidates.has(person.accountId)) {
       candidates.set(person.accountId, {
@@ -75,18 +80,22 @@ export function suggestReviewer(context, pullRequest, loads, now) {
   for (const candidate of candidates.values()) {
     const hasHistory = (context.pullRequests ?? []).some(other => {
       return other.repository === pullRequest.repository &&
-        other.reviewers?.some(reviewer => reviewer.person?.accountId === candidate.person.accountId);
+        (other.author?.accountId === candidate.person.accountId ||
+          other.reviewers?.some(reviewer => reviewer.person?.accountId === candidate.person.accountId));
     });
     const sameTeam = (context.teams ?? []).some(team => {
       return team.members?.includes(candidate.person.accountId) &&
         team.members?.includes(pullRequest.author?.accountId);
     });
-    candidate.affinity = hasHistory ? 2 : sameTeam ? 1 : 0;
-    candidate.reason = hasHistory
+    const isOwner = owners.some(owner => owner.accountId === candidate.person.accountId);
+    candidate.affinity = isOwner ? 3 : hasHistory ? 2 : sameTeam ? 1 : 0;
+    candidate.reason = isOwner ? 'owns the linked issue' : hasHistory
       ? `owns ${pullRequest.repository} reviews`
       : sameTeam ? 'shares the author’s team' : 'has related expertise';
   }
-  const ordered = [...candidates.values()].sort((left, right) => {
+  const independent = [...candidates.values()].filter(candidate =>
+    candidate.person.accountId !== pullRequest.assignee?.accountId);
+  const ordered = (independent.length ? independent : [...candidates.values()]).sort((left, right) => {
     return Number((loads.get(left.person.accountId) ?? 0) >= 2) - Number((loads.get(right.person.accountId) ?? 0) >= 2) ||
       right.affinity - left.affinity ||
       (loads.get(left.person.accountId) ?? 0) - (loads.get(right.person.accountId) ?? 0) ||

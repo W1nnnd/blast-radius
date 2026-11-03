@@ -1,8 +1,9 @@
 /** Redact configured credentials, including their Basic authorization encoding. */
 export function safeErrorMessage(message, env) {
-  const email = env.ATLASSIAN_EMAIL;
-  const token = env.ATLASSIAN_API_TOKEN;
-  const secrets = [email, token, email && token && Buffer.from(`${email}:${token}`).toString('base64')]
+  const emails = [env.FORGE_EMAIL, env.ATLASSIAN_EMAIL].filter(Boolean);
+  const tokens = [env.FORGE_API_TOKEN, env.ATLASSIAN_API_TOKEN].filter(Boolean);
+  const secrets = [...emails, ...tokens, ...emails.flatMap(email => tokens.map(token =>
+    Buffer.from(`${email}:${token}`).toString('base64')))]
     .filter(Boolean).sort((a, b) => b.length - a.length);
   let text = String(message);
   for (const secret of secrets) {

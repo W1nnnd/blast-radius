@@ -61,7 +61,13 @@ function Evidence({data}) {
         <Text key={name}>{name}: {count}</Text>
       ))}
       {Object.entries(sources).map(([name, source]) => (
-        <Text key={name}>{name}: {source.available ? 'available' : source.reason}</Text>
+        <Text key={name}>{name}: {source.available ? 'available' : source.reason}{source.via === 'jira-remote-link' ? ' — Jira remote link (not Teamwork Graph)' : ''}</Text>
+      ))}
+      {(data.evidence ?? []).map((item, index) => (
+        <Text key={`${item.type}-${item.id}-${index}`}>
+          {item.url ? <Link href={item.url}>{item.label}</Link> : item.label}
+          {item.evidenceLabel ? ` — ${item.evidenceLabel}` : ''}
+        </Text>
       ))}
       <Text>Generated at {data.generatedAt}</Text>
       <Text>{data.disclaimer}</Text>

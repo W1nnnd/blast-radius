@@ -36,7 +36,7 @@ test(
   }
 );
 test(
-  'Jira REST version resolution queries fixVersion ID and follows JQL pages',
+  'Jira REST version resolution queries fixVersion name and follows JQL pages',
   async () => {
     const seen = [];
     let node = 0;
@@ -73,7 +73,7 @@ test(
     const result = await jira.resolveVersion('PAY', '2.4.0');
     assert.deepEqual(result.issueKeys, ['PAY-142', 'PAY-143']);
     assert.equal(result.ari, 'ari:cloud:jira:c:version/240');
-    assert.match(JSON.parse(seen[1].opts.body).jql, /fixVersion = "240"/);
+    assert.match(JSON.parse(seen[1].opts.body).jql, /fixVersion = "2\.4\.0"/);
     assert.equal(JSON.parse(seen[2].opts.body).nextPageToken, 'next');
   }
 );
