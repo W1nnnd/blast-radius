@@ -70,7 +70,7 @@ npm test                                        # 101 tests
 npm run validate:manifest                       # manifest vs. @forge/manifest JSON schema
 node scripts/demo-cli.mjs release PAY 2.4.0 --text   # HOLD · 88/100 · high confidence
 node scripts/demo-cli.mjs release PAY 2.3.1 --text   # GO · 0/100
-node scripts/demo-cli.mjs issue PAY-142 --text
+node scripts/demo-cli.mjs issue PAY-1 --text
 npm run seed:plan                               # what the demo-site seeding would create
 npm run queries:plan                            # persisted Cypher that would be registered
 ```

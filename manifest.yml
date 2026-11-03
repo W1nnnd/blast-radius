@@ -15,7 +15,7 @@ modules:
           title: Issue key
           type: string
           required: true
-          description: Jira issue key such as PAY-142.
+          description: Jira issue key such as PAY-1.
     - key: score-release-risk
       name: Score Release Risk
       description: |
@@ -44,7 +44,7 @@ modules:
           title: Issue key
           type: string
           required: true
-          description: Jira issue key such as PAY-142.
+          description: Jira issue key such as PAY-1.
     - key: generate-release-checklist
       name: Generate Release Checklist
       description: Use when a user needs an actionable pre-release checklist with
@@ -69,9 +69,9 @@ modules:
       prompt: resource:agent-prompts;agent-prompt.txt
       followUpPrompt: Ask which unresolved risk the user wants to investigate next.
       conversationStarters:
-        - What could PAY-142 break?
+        - What could PAY-1 break?
         - Score version 2.4.0 in project PAY.
-        - Who knows about PAY-142 and what was already decided?
+        - Who knows about PAY-1 and what was already decided?
       actions:
         - get-change-context
         - score-release-risk

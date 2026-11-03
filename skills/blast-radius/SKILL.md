@@ -1,6 +1,6 @@
 ---
 name: blast-radius
-description: Decide whether a Jira release or issue is safe to ship. Use the Blast Radius MCP tools (Atlassian Forge app) to get an evidence-backed risk verdict, a pre-release checklist and the right experts from Teamwork Graph. Use when someone asks "can we ship X?", "what could PAY-142 break?", "who should review this?" or wants a release checklist.
+description: Decide whether a Jira release or issue is safe to ship. Use the Blast Radius MCP tools (Atlassian Forge app) to get an evidence-backed risk verdict, a pre-release checklist and the right experts from Teamwork Graph. Use when someone asks "can we ship X?", "what could PAY-1 break?", "who should review this?" or wants a release checklist.
 license: MIT
 ---
 
@@ -20,8 +20,8 @@ builds, deployments, Confluence runbooks/decisions, incidents, people and teams,
 | Tool | Input | Use it for |
 |---|---|---|
 | `score-release-risk` | `{ "projectKey": "PAY", "versionName": "2.4.0" }` | Go / no-go for a release version |
-| `get-change-context` | `{ "issueKey": "PAY-142" }` | What one change touches and could break |
-| `find-experts` | `{ "issueKey": "PAY-142" }` | Who knows this code/doc and should review |
+| `get-change-context` | `{ "issueKey": "PAY-1" }` | What one change touches and could break |
+| `find-experts` | `{ "issueKey": "PAY-1" }` | Who knows this code/doc and should review |
 | `generate-release-checklist` | `{ "projectKey": "PAY", "versionName": "2.4.0" }` | Markdown checklist to paste into a PR, Confluence or Slack |
 If the client namespaces tools, use the names it discovers.
 
@@ -40,5 +40,5 @@ If the client namespaces tools, use the names it discovers.
 
 ## Example
 User: "Can we ship PAY 2.4.0 on Friday?" → call `score-release-risk` → answer:
-"HOLD (88/100, high confidence). Blockers: build payments-api #918 failed (PAY-142), prod-eu #311 rolled back 12 days ago,
+"HOLD (88/100, high confidence). Blockers: build payments-api #918 failed (PAY-1), prod-eu #311 rolled back 12 days ago,
 incident INC-7 open. Next: fix the two builds, confirm rollback recovery, get PR #42 reviewed (suggested: Iris Lane)."

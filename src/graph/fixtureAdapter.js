@@ -5,7 +5,11 @@ import {SOURCES} from '../engine/coverage.js';
 
 /** Resolve fixture subjects and return isolated, mutable copies of their neighborhoods. */
 export function createFixtureAdapter(data = dataset) {
+  // Live seeded PAY-1..PAY-10 aliases retain the dataset's original evidence links.
+  const aliases = Object.fromEntries(Array.from({length: 10}, (_, index) =>
+    [`PAY-${index + 1}`, `PAY-${index + 142}`]));
   const resolveIssue = async key => {
+    key = aliases[key] ?? key;
     const issue = data.issues.find(candidate => candidate.key === key);
     if (!issue) throw new Error('Issue not found');
     return {...structuredClone(issue), ari: `fixture:issue/${issue.id}`};

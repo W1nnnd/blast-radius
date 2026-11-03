@@ -9,9 +9,9 @@ let report;
 if (command === 'release') {
   report = await service.analyzeRelease(projectOrIssue ?? 'PAY', version ?? '2.4.0');
 } else if (command === 'issue') {
-  report = await service.analyzeIssue(projectOrIssue ?? 'PAY-142');
+  report = await service.analyzeIssue(projectOrIssue ?? 'PAY-1');
 } else {
-  console.error('Usage: demo-cli.mjs release PAY 2.4.0 | issue PAY-142 [--text]');
+  console.error('Usage: demo-cli.mjs release PAY 2.4.0 | issue PAY-1 [--text]');
   process.exitCode = 1;
 }
 if (report) {

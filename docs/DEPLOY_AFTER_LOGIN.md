@@ -123,7 +123,7 @@ installation link" → for Marketplace, register a **second copy** (`forge regis
 (Marketplace)"` in a separate checkout) and submit that one; keep this app for the judges' link.
 
 ## 10. Smoke checklist before the video
-- [ ] `forge logs -e development --since 15m` shows no errors after opening PAY-142 panel
+- [ ] `forge logs -e development --since 15m` shows no errors after opening PAY-1 panel
 - [ ] Panel shows verdict, categories, checklist, experts, evidence links
 - [ ] Rovo agent answers the 3 conversation starters with links
 - [ ] Claude/Cursor MCP client lists 4 tools and `score-release-risk` returns JSON

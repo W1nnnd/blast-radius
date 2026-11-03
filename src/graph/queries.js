@@ -45,6 +45,7 @@ export const CUSTOM_QUERY = `
   ) {
     customQuery(queryKey: $queryKey, queryParams: $queryParams, first: $first, after: $after) {
       edges { node { columns { key value {
+        __typename
         ... on CypherQueryResultListNode { nodes { id data {
           __typename
           ... on ExternalBuild { id displayName state url lastUpdatedAt }

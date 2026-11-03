@@ -12,17 +12,35 @@ As of **2026-11-03 SGT**.
 - Created via REST: Jira scrum project `PAY` (ID `10234`) and Confluence space `PAYDOCS` (ID `4292611`).
 - Seed applied: versions `2.4.0` and `2.3.1`, 10 issues, 1 blocks link, 6 pages, and 10 PR remote links. Dataset keys `PAY-142`–`PAY-151` map to live keys `PAY-1`–`PAY-10`; see `demo/seed/.seed-state.json`.
 
-## Blocker: persisted query registration
+## Persisted queries (done 2026-11-03)
 
-`POST /gateway/api/twg/cypher-queries` returns **401** with `x-failure-category: FAILURE_CLIENT_AUTH_MISMATCH` for API-token basic authentication. Jira REST and the GraphQL gateway work with the same token.
+Registered through TWG Labs query builder (logged-in browser) under this app; keys are in `src/graph/queryKeys.js`:
 
-Submit the queries through **TWG Labs / query builder in a logged-in browser**, write the returned keys into `src/graph/queryKeys.js`, then redeploy.
+| Source | Key | UI test on PAY-1 |
+|---|---|---|
+| builds | `3d6890a5-b11d-4aad-b467-ce4fc7dd92a3` | ran, empty (no dev-tool connector) |
+| commits | `78f616b5-24a3-48a0-98e1-bba0c489f740` | result not read |
+| blockers | `6fe388c5-0e88-4dd7-ba89-51cb6b9bb45f` | ran, empty |
+| pages | `a318fc0b-25e6-4ef1-a386-f9413464497b` | **"There was an issue running this query, please reach out to Atlassian Support"** — app degrades: coverage note with error code |
+| releaseIssues | `47563b9e-f1b2-43bd-8585-8cbab9d12936` | ran, empty |
+| incidents | `e9492a67-35bb-4ba5-8bc9-4df0ffc8fbc7` | ran, empty |
+
+Execution uses `customQuery(queryKey, queryParams: { id: <ARI> }, first: 25, after)`. Each failing source logs `[blast-radius] twg source=<s> code=<CODE>`; each issue analysis logs `[blast-radius] twg counts {...}` (counts only).
+
+Development redeployed as **2.1.0** (minor; both installs on major 2 show Up-to-date, no upgrade needed). `forge lint` clean, `npm test` 108/108.
+
+The `API-token` registration endpoint still returns 401 `FAILURE_CLIENT_AUTH_MISMATCH`; use the browser for any new query text.
+
+## Demo key
+
+Live demo issue is **PAY-1** (dataset `PAY-142`, the richest: blocked by PAY-2, linked pages/remote PR links). Manifest starters, docs and skill now say PAY-1; fixture mode accepts PAY-1..PAY-10 as aliases of PAY-142..PAY-151.
+Panel test URL: https://one-atlas-wdon.atlassian.net/browse/PAY-1
 
 ## Remaining work
 
-- Register queries via browser and redeploy. Until then, consider `BLAST_RADIUS_DATA_SOURCE=fixture` for the demo.
-- Verify `NEEDS-LIVE` queries.
-- Open the issue panel on `PAY-1` in a browser and check Forge logs.
+- Open the PAY-1 panel in a browser, then `forge logs -e development --since 15m` to see per-source codes/counts (no invocation logged yet).
+- `pages` query: internal Atlassian error; consider re-registering with a different traversal (e.g. `jira_work_item_links_confluence_page` style relationship) or report to Atlassian.
+- Dev-tool data (builds/commits/PRs/deployments) is empty without a GitHub/Bitbucket connector.
+- Verify `NEEDS-LIVE` queries return data once links exist.
 - Enable MCP tools in admin.
-- Align demo scripts/video with live key `PAY-1`; they currently reference `PAY-142`.
 - Deploy to production and create a sharing link **only after user approval**.

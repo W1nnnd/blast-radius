@@ -208,3 +208,15 @@ test(
     assert.ok(Date.parse(report.generatedAt) <= Date.now());
   }
 );
+
+test('fixture accepts all live demo issue aliases with original evidence', async () => {
+  const adapter = createFixtureAdapter();
+  for (let index = 0; index < 10; index++) {
+    const alias = await adapter.resolveIssue(`PAY-${index + 1}`);
+    const original = await adapter.resolveIssue(`PAY-${index + 142}`);
+    assert.deepEqual(alias, original);
+    assert.deepEqual(await adapter.getIssueContext({key: `PAY-${index + 1}`}),
+      await adapter.getIssueContext(original));
+  }
+  assert.deepEqual(await service.analyzeIssue('PAY-1'), await service.analyzeIssue('PAY-142'));
+});

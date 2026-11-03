@@ -9,7 +9,7 @@ export function createTwgAdapter({
   jira,
   queryKeys = {}
 }) {
-  async function read(source, id, coverage, persisted = false) {
+  async function read(source, id, coverage, persisted = false, warned = new Set()) {
     if (persisted && !queryKeys[source]) {
       coverage[source] = {
         available: false,
@@ -37,7 +37,9 @@ export function createTwgAdapter({
           };
         const json = await request(persisted ? CUSTOM_QUERY : curatedQuery(source), variables);
         if (json?.errors?.length) {
-          throw new Error('GraphQL error');
+          throw Object.assign(new Error('GraphQL error'), {
+            code: json.errors.find(error => error?.extensions?.code)?.extensions.code
+          });
         }
         const field = persisted
           ? 'customQuery'
@@ -76,10 +78,17 @@ export function createTwgAdapter({
         reason: 'pagination limit reached; evidence truncated'
       };
       return nodes;
-    } catch {
+    } catch (error) {
+      // Accept only bounded GraphQL-style codes; never log request messages or data.
+      const code = typeof error?.code === 'string' && /^[A-Z][A-Z0-9_]{0,63}$/.test(error.code)
+        ? error.code : 'UNKNOWN';
+      if (!warned.has(source)) {
+        console.warn(`[blast-radius] twg source=${source} code=${code}`);
+        warned.add(source);
+      }
       coverage[source] = {
         available: false,
-        reason: 'graph request unavailable; verify access and schema'
+        reason: `graph request unavailable (${code})`
       };
       return [];
     }
@@ -102,6 +111,9 @@ export function createTwgAdapter({
       return result;
     },
     async getIssueContext(ref) {
+      const warned = new Set();
+      const readSource = (source, id, coverage, persisted = false) =>
+        read(source, id, coverage, persisted, warned);
       const context = emptyContext({
         type: 'issue',
         key: ref.key,
@@ -109,21 +121,21 @@ export function createTwgAdapter({
       });
       const issue = normalizeIssue(ref);
       context.issues = [issue];
-      context.pullRequests = (await read('pullRequests', ref.ari, context.coverage))
+      context.pullRequests = (await readSource('pullRequests', ref.ari, context.coverage))
         .map(node => normalizePR(node, ref.key));
-      context.deployments = (await read('deployments', ref.ari, context.coverage))
+      context.deployments = (await readSource('deployments', ref.ari, context.coverage))
         .map(node => normalizeDeployment(node, ref.key));
-      context.builds = (await read('builds', ref.ari, context.coverage, true))
+      context.builds = (await readSource('builds', ref.ari, context.coverage, true))
         .map(node => normalizeBuild(node, ref.key));
-      context.pages = (await read('pages', ref.ari, context.coverage, true))
+      context.pages = (await readSource('pages', ref.ari, context.coverage, true))
         .map(node => normalizePage(node, ref.key));
-      context.commits = (await read('commits', ref.ari, context.coverage, true)).map(node => ({
+      context.commits = (await readSource('commits', ref.ari, context.coverage, true)).map(node => ({
         id: String(node.id ?? node.data?.id ?? '')
       }));
-      const graphBlockers = await read('blockers', ref.ari, context.coverage, true);
+      const graphBlockers = await readSource('blockers', ref.ari, context.coverage, true);
       // Prefer graph evidence; fall back to Jira REST issue links resolved with the issue.
       issue.blockers = (graphBlockers.length ? graphBlockers : ref.blockers ?? []).map(normalizeIssue);
-      context.incidents = (await read('incidents', ref.ari, context.coverage, true)).map(node => ({
+      context.incidents = (await readSource('incidents', ref.ari, context.coverage, true)).map(node => ({
         ...normalizeIssue({
           ...node,
           ...node.data
@@ -145,7 +157,7 @@ export function createTwgAdapter({
       const states = [];
       for (const pullRequest of context.people.slice(0, 25)) {
         const coverage = {};
-        const teams = await read('people', `ari:cloud:identity::user/${pullRequest.accountId}`, coverage);
+        const teams = await readSource('people', `ari:cloud:identity::user/${pullRequest.accountId}`, coverage);
         states.push(coverage.people);
         for (const team of teams) {
           const old = context.teams.find(x => x.id === team.id);
@@ -168,6 +180,18 @@ export function createTwgAdapter({
           available: false,
           reason: 'team/person coverage incomplete'
         };
+      const counts = {
+        pullRequests: context.pullRequests.length,
+        deployments: context.deployments.length,
+        builds: context.builds.length,
+        pages: context.pages.length,
+        commits: context.commits.length,
+        blockers: graphBlockers.length,
+        incidents: context.incidents.length,
+        people: context.people.length,
+        teams: context.teams.length
+      };
+      console.log(`[blast-radius] twg counts ${JSON.stringify(counts)}`);
       return context;
     }
   };

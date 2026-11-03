@@ -274,3 +274,67 @@ test(
     assert.equal(context.coverage.commits.available, true);
   }
 );
+
+test('registered query keys are six frozen UUIDs', async () => {
+  const { QUERY_KEYS } = await import('../src/graph/queryKeys.js');
+  assert.deepEqual(Object.keys(QUERY_KEYS).sort(),
+    ['builds', 'commits', 'blockers', 'pages', 'releaseIssues', 'incidents'].sort());
+  assert.ok(Object.isFrozen(QUERY_KEYS));
+  for (const key of Object.values(QUERY_KEYS)) {
+    assert.match(key, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+  }
+});
+
+test('real persisted keys use id params and isolate pages GraphQL failure', async () => {
+  const { QUERY_KEYS } = await import('../src/graph/queryKeys.js');
+  const seen = [];
+  const warnings = [];
+  const summaries = [];
+  const warn = console.warn;
+  const log = console.log;
+  console.warn = value => warnings.push(value);
+  console.log = value => summaries.push(value);
+  try {
+    const adapter = createTwgAdapter({
+      jira: {},
+      queryKeys: QUERY_KEYS,
+      request: async (query, variables) => {
+        if (variables.queryKey) {
+          seen.push(variables);
+          if (variables.queryKey === QUERY_KEYS.pages) {
+            return { data: { customQuery: null }, errors: [{
+              message: 'private payload', extensions: { code: 'INTERNAL_SERVER_ERROR' }
+            }] };
+          }
+          return custom('items', [{ id: 'node', data: { key: 'PAY-1', state: 'failed' } }]);
+        }
+        return { data: {
+          [query.includes('PullRequests')
+            ? 'jiraWorkItemLinkedExternalPullRequests'
+            : 'jiraWorkItemLinkedExternalDeployments']: connection([{ id: 'node' }])
+        } };
+      }
+    });
+    const context = await adapter.getIssueContext(ref);
+    await adapter.getReleaseIssues(ref.ari);
+    assert.deepEqual(new Set(seen.map(value => value.queryKey)), new Set(Object.values(QUERY_KEYS)));
+    for (const variables of seen) {
+      assert.deepEqual(variables.queryParams, { id: ref.ari });
+      assert.equal(variables.first, 25);
+    }
+    assert.equal(context.coverage.pages.available, false);
+    assert.match(context.coverage.pages.reason, /INTERNAL_SERVER_ERROR/);
+    for (const source of ['pullRequests', 'deployments', 'builds', 'commits', 'incidents']) {
+      assert.equal(context[source].length, 1);
+      assert.equal(context.coverage[source].available, true);
+    }
+    assert.equal(context.issues[0].blockers.length, 1);
+    assert.deepEqual(warnings, ['[blast-radius] twg source=pages code=INTERNAL_SERVER_ERROR']);
+    assert.equal(summaries.length, 1);
+    assert.match(summaries[0], /"pages":0/);
+    assert.doesNotMatch(JSON.stringify([context, warnings, summaries]), /private payload/);
+  } finally {
+    console.warn = warn;
+    console.log = log;
+  }
+});
