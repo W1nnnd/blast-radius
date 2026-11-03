@@ -33,9 +33,15 @@ function handlers(context = {}) {
       request: async (query, variables) => {
         const response = await asUser().requestTeamworkGraph(query, variables);
         if (response.ok === false) {
-          throw new Error('Graph unavailable');
+          const json = await response.json().catch(() => ({}));
+          throw Object.assign(new Error('Graph unavailable'), {
+            status: response.status,
+            errors: json.errors,
+            code: json.errors?.[0]?.extensions?.code,
+            classification: json.errors?.[0]?.extensions?.classification
+          });
         }
-        return response.json();
+        return { ...await response.json(), status: response.status };
       }
     }
   );

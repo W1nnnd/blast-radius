@@ -24,7 +24,7 @@ test(
         q: query,
         v: value
       });
-      if (query.includes('BlastRadiusPersisted')) {
+      if (query.includes('BlastRadius_persistedQuery')) {
         return custom('builds', [{
           id: 'b',
           data: {
@@ -329,10 +329,14 @@ test('real persisted keys use id params and isolate pages GraphQL failure', asyn
       assert.equal(context.coverage[source].available, true);
     }
     assert.equal(context.issues[0].blockers.length, 1);
-    assert.deepEqual(warnings, ['[blast-radius] twg source=pages code=INTERNAL_SERVER_ERROR']);
+    assert.equal(warnings.length, 1);
+    assert.deepEqual(JSON.parse(warnings[0].replace('[blast-radius] twg ', '')), {
+      source: 'pages', status: null, code: 'INTERNAL_SERVER_ERROR',
+      classification: null, message: 'private payload'
+    });
     assert.equal(summaries.length, 1);
     assert.match(summaries[0], /"pages":0/);
-    assert.doesNotMatch(JSON.stringify([context, warnings, summaries]), /private payload/);
+    assert.doesNotMatch(JSON.stringify([context, summaries]), /private payload/);
   } finally {
     console.warn = warn;
     console.log = log;
@@ -370,4 +374,46 @@ test('independent graph sources and at most ten person reads run concurrently', 
   assert.equal(teamPeak, 10);
   assert.equal(context.coverage.people.available, false);
   assert.equal(context.teams[0].members.length, 10);
+});
+
+test('graph diagnostics redact identifiers before truncating to 160 characters', async () => {
+  const {sanitizeGraphMessage} = await import('../src/graph/twgAdapter.js');
+  assert.equal(sanitizeGraphMessage('ari:cloud:jira:abc:issue/123 01234567-89ab-cdef-0123-456789abcdef person@example.com 123456:abcd-1234'),
+    '<redacted> <redacted> <redacted> <redacted>');
+  assert.equal(sanitizeGraphMessage(undefined), '');
+  assert.equal(sanitizeGraphMessage('x'.repeat(200)), 'x'.repeat(160));
+  assert.equal(sanitizeGraphMessage('x'.repeat(150) + ' person@example.com'), 'x'.repeat(150) + ' <redacted');
+});
+
+test('graph error fallback prefers code, classification, HTTP status, then UNKNOWN', async () => {
+  const {graphErrorCode} = await import('../src/graph/twgAdapter.js');
+  assert.equal(graphErrorCode({code: 'FORBIDDEN', classification: 'DataFetchingException', status: 403}), 'FORBIDDEN');
+  assert.equal(graphErrorCode({classification: 'DataFetchingException', status: 200}), 'DataFetchingException');
+  assert.equal(graphErrorCode({status: 503}), 'HTTP_503');
+  assert.equal(graphErrorCode({}), 'UNKNOWN');
+  assert.equal(graphErrorCode({code: 'private@example.com', classification: 'bad message', status: 503}), 'HTTP_503');
+});
+
+test('GraphQL classifications and HTTP failures produce safe coverage and source diagnostics', async () => {
+  const warnings = [];
+  const original = console.warn;
+  console.warn = value => warnings.push(JSON.parse(value.replace('[blast-radius] twg ', '')));
+  try {
+    for (const httpFailure of [false, true]) {
+      const errors = [{message: 'Failed for ari:cloud:jira:tenant:issue/123 user@example.com',
+        extensions: {classification: 'DataFetchingException'}}];
+      const adapter = createTwgAdapter({jira: {}, request: async () => {
+        if (httpFailure) throw Object.assign(new Error('Graph unavailable'), {status: 503, errors});
+        return {status: 200, errors};
+      }});
+      const context = await adapter.getIssueContext(ref);
+      assert.equal(context.coverage.pullRequests.reason,
+        `graph request unavailable (${httpFailure ? 'HTTP_503' : 'DataFetchingException'})`);
+    }
+    assert.equal(warnings.length, 4);
+    assert.deepEqual(warnings.map(warning => warning.status), [200, 200, 503, 503]);
+    assert.ok(warnings.every(warning => warning.message === 'Failed for <redacted> <redacted>'));
+  } finally {
+    console.warn = original;
+  }
 });

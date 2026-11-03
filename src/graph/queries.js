@@ -40,7 +40,7 @@ export const curatedQuery = source => `
 `;
 
 export const CUSTOM_QUERY = `
-  query BlastRadiusPersisted(
+  query BlastRadius_persistedQuery(
     $queryKey: String!, $queryParams: CypherRequestParams, $first: Int!, $after: String
   ) {
     customQuery(queryKey: $queryKey, queryParams: $queryParams, first: $first, after: $after) {

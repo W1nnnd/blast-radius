@@ -3,6 +3,28 @@ import { curatedQuery, CUSTOM_QUERY } from './queries.js';
 import { parseColumns } from './parse.js';
 import { emptyContext, person } from '../domain/model.js';
 import { normalizeIssue, normalizePR, normalizeBuild, normalizeDeployment, normalizePage } from './twgNormalize.js';
+/** Redact identifiers before bounding the diagnostic so truncated identifiers cannot leak. */
+export function sanitizeGraphMessage(message) {
+  if (typeof message !== 'string') return '';
+  return message
+    .replace(/ari:cloud:[^\s"'<>),;]+/gi, '<redacted>')
+    .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, '<redacted>')
+    .replace(/[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '<redacted>')
+    .replace(/\b\d+:[0-9a-f-]+/gi, '<redacted>')
+    .slice(0, 160);
+}
+
+function diagnosticToken(value) {
+  return typeof value === 'string' && /^[A-Za-z][A-Za-z0-9_]{0,99}$/.test(value)
+    ? value : undefined;
+}
+
+export function graphErrorCode(error) {
+  return diagnosticToken(error?.code) ?? diagnosticToken(error?.classification)
+    ?? (Number.isInteger(error?.status) && error.status >= 100 && error.status <= 599
+      ? `HTTP_${error.status}` : 'UNKNOWN');
+}
+
 /** Read bounded TWG neighborhoods and preserve visibility failures as coverage notes. */
 export function createTwgAdapter({
   request,
@@ -38,7 +60,10 @@ export function createTwgAdapter({
         const json = await request(persisted ? CUSTOM_QUERY : curatedQuery(source), variables);
         if (json?.errors?.length) {
           throw Object.assign(new Error('GraphQL error'), {
-            code: json.errors.find(error => error?.extensions?.code)?.extensions.code
+            code: json.errors[0]?.extensions?.code,
+            classification: json.errors[0]?.extensions?.classification,
+            status: json.status,
+            errors: json.errors
           });
         }
         const field = persisted
@@ -79,11 +104,15 @@ export function createTwgAdapter({
       };
       return nodes;
     } catch (error) {
-      // Accept only bounded GraphQL-style codes; never log request messages or data.
-      const code = typeof error?.code === 'string' && /^[A-Z][A-Z0-9_]{0,63}$/.test(error.code)
-        ? error.code : 'UNKNOWN';
+      const code = graphErrorCode(error);
       if (!warned.has(source)) {
-        console.warn(`[blast-radius] twg source=${source} code=${code}`);
+        console.warn(`[blast-radius] twg ${JSON.stringify({
+          source,
+          status: Number.isInteger(error?.status) ? error.status : null,
+          code: diagnosticToken(error?.code) ?? null,
+          classification: diagnosticToken(error?.classification) ?? null,
+          message: sanitizeGraphMessage(error?.errors?.[0]?.message)
+        })}`);
         warned.add(source);
       }
       coverage[source] = {

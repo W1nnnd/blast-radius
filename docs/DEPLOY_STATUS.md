@@ -40,6 +40,14 @@ Fix: namespace imports + `src/forgeInterop.js` (`resolveDefaultExport`, `resolve
 Also: graph sources read concurrently (7 in parallel, team reads capped at 10 people); every TWG failure is per-source coverage; panel verdict is built from Jira REST (issue links, fix versions, labels, status) when all graph sources fail; the frontend renders the analysis whenever a verdict is present.
 Deployed development **2.2.0**; installs on major 2 Up-to-date; lint clean; `npm test` 116/116.
 
+## Fix 2026-11-03 ~15:15 SGT — all persisted queries "graph request unavailable (UNKNOWN)" (dev 2.3.0)
+
+Logs at 15:03 SGT (dev 2.2.0) showed `twg source=<pages|builds|incidents|blockers|commits> code=UNKNOWN` for every persisted source.
+A direct probe of `/gateway/api/graphql/twg` with the same `CUSTOM_QUERY` returned HTTP 200 with
+`"You must set an operation name of the shape `[company]_[operation]` with company >= 3 chars and operation >= 4 chars and max length 100"` (`classification: DataFetchingException`, no `code`).
+The operation was named `BlastRadiusPersisted`; renamed to `BlastRadius_persistedQuery`. With the new name the gateway accepts the query, and the only remaining error outside Forge was `MISSING_TARGET_AUDIENCE` (expected for a non-app token).
+Logs now print `[blast-radius] twg {"source","status","code","classification","message"}`, with the message limited to 160 characters and identifiers redacted. A test enforces the operation-name pattern on all queries. Tests: 120/120. Lint: clean.
+
 ## Demo key
 
 Live demo issue is **PAY-1** (dataset `PAY-142`, the richest: blocked by PAY-2, linked pages/remote PR links). Manifest starters, docs and skill now say PAY-1; fixture mode accepts PAY-1..PAY-10 as aliases of PAY-142..PAY-151.
