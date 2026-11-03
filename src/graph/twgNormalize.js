@@ -16,6 +16,8 @@ export function normalizeIssue(node) {
       : /done|closed|resolved/i.test(typeof record.status === 'string' ? record.status : record.status?.name ?? '')
         ? 'done'
         : 'indeterminate',
+    labels: list(record.labels),
+    fixVersions: list(record.fixVersions),
     priority: record.priority?.name ?? record.priority ?? '',
     type: record.issueType?.name ?? record.type ?? '',
     assignee: person(record.assignee),

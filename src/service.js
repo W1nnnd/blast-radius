@@ -61,7 +61,7 @@ export function createService(adapter, {
           'a low score is not a safety guarantee.'
     });
   };
-  const issueContext = async key => adapter.getIssueContext(await adapter.resolveIssue(key));
+  const issueContext = async (key, ref) => adapter.getIssueContext(ref ?? await adapter.resolveIssue(key));
   const releaseContext = async (projectKey, name) => {
     const version = await adapter.resolveVersion(projectKey, name);
     const issues = await adapter.getReleaseIssues(version.ari, version);
@@ -80,7 +80,7 @@ export function createService(adapter, {
     return context;
   };
   return {
-    analyzeIssue: async key => report(await issueContext(key)),
+    analyzeIssue: async (key, ref) => report(await issueContext(key, ref)),
     analyzeRelease: async (projectKey, version) => report(await releaseContext(projectKey, version)),
     findExperts: async key => report(await issueContext(key)),
     releaseChecklist: async (projectKey, version, format = 'markdown') => {

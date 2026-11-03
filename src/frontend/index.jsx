@@ -81,7 +81,7 @@ function App() {
     setError(false);
     try {
       const result = await invoke(name, payload);
-      if (result.error) setError(true);
+      if (result.error && !result.verdict) setError(true);
       else {
         setData(result);
         setChecked({});

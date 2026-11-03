@@ -1,6 +1,19 @@
 /** Forge entry points wiring user-scoped transports to the shared analysis service. */
-import api, { route } from '@forge/api';
-import Resolver from '@forge/resolver';
+import * as forgeApiModule from '@forge/api';
+import * as resolverModule from '@forge/resolver';
+import { resolveDefaultExport, resolveNamedExport } from './forgeInterop.js';
+const asUser = resolveNamedExport(forgeApiModule, 'asUser');
+const route = resolveNamedExport(forgeApiModule, 'route');
+if (typeof asUser !== 'function') {
+  throw new TypeError('@forge/api did not expose an asUser function');
+}
+if (typeof route !== 'function') {
+  throw new TypeError('@forge/api did not expose a route tagged template function');
+}
+const Resolver = resolveDefaultExport(resolverModule);
+if (typeof Resolver !== 'function') {
+  throw new TypeError('@forge/resolver did not expose a Resolver constructor');
+}
 import { createAdapter } from './graph/adapter.js';
 import { QUERY_KEYS } from './graph/queryKeys.js';
 import { createJiraRest } from './jira/jiraRest.js';
@@ -8,7 +21,7 @@ import { createService } from './service.js';
 import { createHandlers } from './handlers.js';
 function handlers(context = {}) {
   const jira = createJiraRest({
-    request: (...args) => api.asUser().requestJira(...args),
+    request: (...args) => asUser().requestJira(...args),
     route,
     cloudId: context.cloudId ?? context.extension?.cloudId
   });
@@ -18,7 +31,7 @@ function handlers(context = {}) {
       jira,
       queryKeys: QUERY_KEYS,
       request: async (query, variables) => {
-        const response = await api.asUser().requestTeamworkGraph(query, variables);
+        const response = await asUser().requestTeamworkGraph(query, variables);
         if (response.ok === false) {
           throw new Error('Graph unavailable');
         }

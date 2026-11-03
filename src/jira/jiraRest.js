@@ -20,7 +20,7 @@ export function createJiraRest({
   return {
     async resolveIssue(key) {
       const issue = await get(
-        route`/rest/api/3/issue/${key}?fields=summary,status,priority,issuetype,assignee,fixVersions,project,issuelinks`
+        route`/rest/api/3/issue/${key}?fields=summary,status,priority,issuetype,assignee,fixVersions,labels,project,issuelinks`
       );
       const fields = issue.fields ?? {};
       return {
@@ -40,6 +40,7 @@ export function createJiraRest({
           : null,
         url: `/browse/${issue.key}`,
         fixVersions: fields.fixVersions ?? [],
+        labels: fields.labels ?? [],
         // REST fallback for the NEEDS-LIVE graph `blockers` query: inward "Blocks" links.
         blockers: (fields.issuelinks ?? [])
           .filter(link => link?.type?.name === 'Blocks' && link.inwardIssue?.key)

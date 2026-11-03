@@ -31,6 +31,15 @@ Development redeployed as **2.1.0** (minor; both installs on major 2 show Up-to-
 
 The `API-token` registration endpoint still returns 401 `FAILURE_CLIENT_AUTH_MISMATCH`; use the browser for any new query text.
 
+## Fix 2026-11-03 15:xx SGT — panel "Unable to load analysis" (dev 2.2.0)
+
+Root cause (forge logs, 14:56 SGT, dev 2.1.0): every invocation crashed at module load:
+`TypeError: resolver_out_namespaceObject is not a constructor at getDefinitions (webpack://blast-radius/src/index.js:78:18)`.
+`package.json` is `"type": "module"`, so Forge's webpack treats `src/index.js` as strict ESM and a default import of a CommonJS package (`@forge/resolver`, `@forge/api`) yields the whole `module.exports` object, not `exports.default`.
+Fix: namespace imports + `src/forgeInterop.js` (`resolveDefaultExport`, `resolveNamedExport`); verified by a local webpack bundle (old code throws on load, new code exports `handler`).
+Also: graph sources read concurrently (7 in parallel, team reads capped at 10 people); every TWG failure is per-source coverage; panel verdict is built from Jira REST (issue links, fix versions, labels, status) when all graph sources fail; the frontend renders the analysis whenever a verdict is present.
+Deployed development **2.2.0**; installs on major 2 Up-to-date; lint clean; `npm test` 116/116.
+
 ## Demo key
 
 Live demo issue is **PAY-1** (dataset `PAY-142`, the richest: blocked by PAY-2, linked pages/remote PR links). Manifest starters, docs and skill now say PAY-1; fixture mode accepts PAY-1..PAY-10 as aliases of PAY-142..PAY-151.

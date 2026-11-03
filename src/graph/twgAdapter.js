@@ -100,7 +100,12 @@ export function createTwgAdapter({
     async getReleaseIssues(ari, version) {
       const coverage = {};
       const nodes = await read('releaseIssues', ari, coverage, true);
-      const items = nodes.map(normalizeIssue);
+      let items = [];
+      try {
+        items = nodes.map(normalizeIssue);
+      } catch {
+        coverage.releaseIssues = {available: false, reason: 'graph evidence unavailable'};
+      }
       const fallback = !coverage.releaseIssues?.available || !items.length ? version?.issueKeys : [];
       const result = items.length ? items : (fallback ?? []).map(key => ({
         key
@@ -121,28 +126,32 @@ export function createTwgAdapter({
       });
       const issue = normalizeIssue(ref);
       context.issues = [issue];
-      context.pullRequests = (await readSource('pullRequests', ref.ari, context.coverage))
-        .map(node => normalizePR(node, ref.key));
-      context.deployments = (await readSource('deployments', ref.ari, context.coverage))
-        .map(node => normalizeDeployment(node, ref.key));
-      context.builds = (await readSource('builds', ref.ari, context.coverage, true))
-        .map(node => normalizeBuild(node, ref.key));
-      context.pages = (await readSource('pages', ref.ari, context.coverage, true))
-        .map(node => normalizePage(node, ref.key));
-      context.commits = (await readSource('commits', ref.ari, context.coverage, true)).map(node => ({
-        id: String(node.id ?? node.data?.id ?? '')
+      // Independent graph neighborhoods share no pagination state.
+      const sources = {
+        pullRequests: node => normalizePR(node, ref.key),
+        deployments: node => normalizeDeployment(node, ref.key),
+        builds: node => normalizeBuild(node, ref.key),
+        pages: node => normalizePage(node, ref.key),
+        commits: node => ({ id: String(node.id ?? node.data?.id ?? '') }),
+        blockers: normalizeIssue,
+        incidents: node => ({
+          ...normalizeIssue({ ...node, ...node.data }),
+          linkedIssueKeys: [ref.key], createdAt: ''
+        })
+      };
+      const results = await Promise.all(Object.entries(sources).map(async ([source, normalize]) => {
+        try {
+          const nodes = await readSource(source, ref.ari, context.coverage,
+            !['pullRequests', 'deployments'].includes(source));
+          return [source, nodes.map(normalize)];
+        } catch {
+          context.coverage[source] = {available: false, reason: 'graph evidence unavailable'};
+          return [source, []];
+        }
       }));
-      const graphBlockers = await readSource('blockers', ref.ari, context.coverage, true);
-      // Prefer graph evidence; fall back to Jira REST issue links resolved with the issue.
-      issue.blockers = (graphBlockers.length ? graphBlockers : ref.blockers ?? []).map(normalizeIssue);
-      context.incidents = (await readSource('incidents', ref.ari, context.coverage, true)).map(node => ({
-        ...normalizeIssue({
-          ...node,
-          ...node.data
-        }),
-        linkedIssueKeys: [ref.key],
-        createdAt: ''
-      }));
+      const {blockers: graphBlockers, ...collections} = Object.fromEntries(results);
+      Object.assign(context, collections);
+      issue.blockers = graphBlockers.length ? graphBlockers : (ref.blockers ?? []).map(normalizeIssue);
       const people = [
         issue.assignee,
         ...context.pullRequests.flatMap(pullRequest => [
@@ -154,11 +163,13 @@ export function createTwgAdapter({
       context.people = [
         ...new Map(people.map(pullRequest => [pullRequest.accountId, person(pullRequest)])).values()
       ];
-      const states = [];
-      for (const pullRequest of context.people.slice(0, 25)) {
+      const teamReads = await Promise.all(context.people.slice(0, 10).map(async pullRequest => {
         const coverage = {};
         const teams = await readSource('people', `ari:cloud:identity::user/${pullRequest.accountId}`, coverage);
-        states.push(coverage.people);
+        return {pullRequest, teams, state: coverage.people};
+      }));
+      const states = teamReads.map(result => result.state);
+      for (const {pullRequest, teams} of teamReads) {
         for (const team of teams) {
           const old = context.teams.find(x => x.id === team.id);
           if (old) {
@@ -172,7 +183,7 @@ export function createTwgAdapter({
           }
         }
       }
-      context.coverage.people = states.length && states.every(source => source.available)
+      context.coverage.people = context.people.length <= 10 && states.length && states.every(source => source.available)
         ? {
           available: true
         }

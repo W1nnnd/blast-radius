@@ -338,3 +338,36 @@ test('real persisted keys use id params and isolate pages GraphQL failure', asyn
     console.log = log;
   }
 });
+
+test('independent graph sources and at most ten person reads run concurrently', async () => {
+  const {QUERY_KEYS} = await import('../src/graph/queryKeys.js');
+  let active = 0;
+  let graphPeak = 0;
+  let teamPeak = 0;
+  let teamReads = 0;
+  const adapter = createTwgAdapter({jira: {}, queryKeys: QUERY_KEYS,
+    request: async (query, variables) => {
+      const team = query.includes('atlassianUserInTeams');
+      active++;
+      if (team) {
+        teamReads++;
+        teamPeak = Math.max(teamPeak, active);
+      } else graphPeak = Math.max(graphPeak, active);
+      await new Promise(resolve => setImmediate(resolve));
+      active--;
+      if (team) return {data: {atlassianUserInTeams: connection([{id: 'team'}])}};
+      if (variables.queryKey) return custom('items', []);
+      if (query.includes('PullRequests')) return {data: {
+        jiraWorkItemLinkedExternalPullRequests: connection(Array.from({length: 15}, (_, i) => ({
+          id: `pr-${i}`, author: {accountId: `person-${i}`}
+        })))
+      }};
+      return {data: {jiraWorkItemLinkedExternalDeployments: connection()}};
+    }});
+  const context = await adapter.getIssueContext(ref);
+  assert.equal(graphPeak, 7);
+  assert.equal(teamReads, 10);
+  assert.equal(teamPeak, 10);
+  assert.equal(context.coverage.people.available, false);
+  assert.equal(context.teams[0].members.length, 10);
+});

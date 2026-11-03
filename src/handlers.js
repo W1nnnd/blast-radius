@@ -67,8 +67,8 @@ export function createHandlers({
       if (!ISSUE_KEY.test(issueKey ?? '')) {
         return invalid();
       }
-      const result = await service.analyzeIssue(issueKey);
       const ref = await jira.resolveIssue(issueKey);
+      const result = await service.analyzeIssue(issueKey, ref);
       return {
         ...result,
         releaseOptions: (ref.fixVersions ?? []).map(value => ({
