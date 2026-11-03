@@ -152,13 +152,17 @@ test(
           return {
             ok: true,
             status: 200,
-            json: async () => json
+            text: async () => JSON.stringify(json)
           };
         }
       }
     );
     assert.equal(state['PAY-143'], 'PAY-900');
     assert.ok(saves >= 3);
+    assert.deepEqual(calls.find(call => call.path === '/rest/api/3/version').body, {
+      name: tiny.versions[0].name,
+      projectId: 10
+    });
     const issue = calls.find(context => context.path.endsWith('/issue'));
     assert.equal(issue.body.fields.description.type, 'doc');
     assert.deepEqual(issue.body.fields.fixVersions, [{
@@ -168,6 +172,48 @@ test(
     assert.ok(calls.some(context => context.path.includes('/issue/PAY-900/remotelink')));
   }
 );
+test('seed apply accepts an empty-body 201 when creating an issue link', async () => {
+  const dataset = {
+    versions: [],
+    issues: [{ key: 'PAY-2', summary: 'Blocked issue', blockers: [{ key: 'PAY-1' }] }],
+    pages: [],
+    pullRequests: []
+  };
+  const state = { 'PAY-1': 'PAY-901' };
+  let linked = false;
+  await seedSite(dataset, {
+    apply: true,
+    env: {
+      ATLASSIAN_SITE: 'fictional.atlassian.net',
+      ATLASSIAN_EMAIL: 'demo@example.test',
+      ATLASSIAN_API_TOKEN: 'dummy'
+    },
+    state,
+    save: () => {},
+    request: async (url, options) => {
+      const path = new URL(url).pathname;
+      if (path === '/rest/api/3/issueLink') {
+        assert.equal(options.method, 'POST');
+        assert.deepEqual(JSON.parse(options.body).inwardIssue, { key: 'PAY-901' });
+        linked = true;
+        return new Response(null, { status: 201 });
+      }
+      const bodies = {
+        '/rest/api/3/project/PAY': { id: '10' },
+        '/rest/api/3/project/PAY/versions': [],
+        '/wiki/api/v2/spaces': { results: [{ id: 'space-1' }] },
+        '/rest/api/3/search/jql': {
+          issues: [{ key: 'PAY-902', fields: { summary: 'Blocked issue' } }]
+        }
+      };
+      assert.ok(Object.hasOwn(bodies, path), `Unexpected request: ${path}`);
+      return new Response(JSON.stringify(bodies[path]), { status: 200 });
+    }
+  });
+  assert.equal(linked, true);
+  assert.equal(state['link:PAY-1:PAY-2'], true);
+});
+
 test(
   'seed apply project missing gives actionable instruction',
   async () => {
@@ -212,3 +258,46 @@ test(
     );
   }
 );
+
+const errorEnv = {
+  ATLASSIAN_SITE: 'fictional.atlassian.net',
+  ATLASSIAN_EMAIL: 'demo@example.test',
+  ATLASSIAN_API_TOKEN: 'secret-token',
+  FORGE_APP_ID: 'ari:app'
+};
+
+for (const script of ['seed-demo-site', 'register-persisted-queries']) {
+  test(`${script} reports bounded HTTP errors without credentials or headers`, async () => {
+    const register = script === 'register-persisted-queries';
+    const body = 'Permission denied: ' + 'x'.repeat(400) + 'TRUNCATED';
+    const options = {
+      apply: true,
+      env: errorEnv,
+      request: async () => ({
+        ok: false,
+        status: 403,
+        headers: { private: 'HEADER-SECRET' },
+        text: async () => body
+      })
+    };
+    await assert.rejects(register ? registerQueries(options) : seedSite(data, options), error => {
+      assert.ok(error.message.includes(register
+        ? 'POST /gateway/api/twg/cypher-queries (403)'
+        : 'GET /rest/api/3/project/PAY (403)'));
+      assert.ok(error.message.endsWith(body.slice(0, 300)));
+      assert.ok(!error.message.includes('TRUNCATED'));
+      assert.ok(!error.message.includes('HEADER-SECRET'));
+      return true;
+    });
+  });
+
+}
+
+test('error details redact echoed credentials and tolerate unreadable bodies', async () => {
+  const { responseDetail } = await import('../scripts/safe-error.mjs');
+  const encoded = Buffer.from(`${errorEnv.ATLASSIAN_EMAIL}:${errorEnv.ATLASSIAN_API_TOKEN}`).toString('base64');
+  assert.equal(await responseDetail({
+    text: async () => `${errorEnv.ATLASSIAN_EMAIL} ${errorEnv.ATLASSIAN_API_TOKEN} ${encoded}`
+  }, errorEnv), '[REDACTED] [REDACTED] [REDACTED]');
+  assert.equal(await responseDetail({ text: async () => { throw Error('unreadable'); } }, errorEnv), '');
+});

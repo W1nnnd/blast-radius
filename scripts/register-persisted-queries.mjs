@@ -1,3 +1,4 @@
+import { safeErrorMessage, responseDetail } from './safe-error.mjs';
 import { writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { PERSISTED_QUERIES } from '../src/graph/queries.js';
@@ -49,7 +50,7 @@ export async function registerQueries({
       }
     );
     if (!response.ok) {
-      throw new Error('Query registration failed; verify contributor access.');
+      throw new Error(`Query registration failed: POST ${query.path} (${response.status}): ${await responseDetail(response, env)}`);
     }
     const json = await response.json();
     if (typeof json.queryKey !== 'string') {
@@ -71,8 +72,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     for (const query of plan) {
       console.log(`${query.name} [${query.status}]\n${query.cypher}\n`);
     }
-  } catch {
-    console.error('Query registration failed. Verify environment and contributor access.');
+  } catch (error) {
+    console.error(safeErrorMessage(error.message, process.env));
     process.exitCode = 1;
   }
 }

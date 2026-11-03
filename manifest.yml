@@ -1,5 +1,5 @@
 app:
-  id: ari:cloud:ecosystem::app/REPLACE_AFTER_FORGE_REGISTER
+  id: ari:cloud:ecosystem::app/71f0dc36-ccf4-4d78-88d0-882f02159e9e
   runtime:
     name: nodejs24.x
 modules:
@@ -47,9 +47,10 @@ modules:
           description: Jira issue key such as PAY-142.
     - key: generate-release-checklist
       name: Generate Release Checklist
-      description: Use when a user needs an actionable pre-release checklist with evidence and suggested reviewers.
+      description: Use when a user needs an actionable pre-release checklist with
+        evidence and suggested reviewers.
       actionVerb: GET
-      function: generateReleaseChecklist
+      function: releaseChecklist
       inputs:
         projectKey:
           title: Project key
@@ -99,7 +100,7 @@ modules:
       handler: index.scoreReleaseRisk
     - key: findExperts
       handler: index.findExperts
-    - key: generateReleaseChecklist
+    - key: releaseChecklist
       handler: index.generateReleaseChecklist
     - key: resolver
       handler: index.handler

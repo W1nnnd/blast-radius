@@ -1,4 +1,5 @@
 /** Apply or print an explicit demo seed plan using an injected REST transport. */
+import { safeErrorMessage, responseDetail } from './safe-error.mjs';
 import { planSeed } from './seed-plan.mjs';
 export { planSeed } from './seed-plan.mjs';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
@@ -50,12 +51,14 @@ export async function seedSite(dataset, {
       }
     );
     if (!response.ok) {
+      const detail = await responseDetail(response, env);
       if (response.status === 404 && path === '/rest/api/3/project/PAY') {
-        throw new Error('Create a Scrum software project with key PAY in Jira UI first.');
+        throw new Error(`Create a Scrum software project with key PAY in Jira UI first. ${method} ${path} (${response.status}): ${detail}`);
       }
-      throw new Error(`REST operation failed (${response.status}); verify project and space permissions.`);
+      throw new Error(`REST operation failed: ${method} ${path} (${response.status}): ${detail}`);
     }
-    return response.status === 204 ? {} : response.json();
+    const text = await response.text();
+    return text === '' ? {} : JSON.parse(text);
   }
   const project = await call('GET', '/rest/api/3/project/PAY');
   const versions = await call('GET', '/rest/api/3/project/PAY/versions');
@@ -81,8 +84,8 @@ export async function seedSite(dataset, {
     if (step.kind === 'version') {
       const version = versions.find(v => v.name === step.body.name) ??
         (await call('POST', step.path, {
-          ...step.body,
-          project: project.id
+          name: step.body.name,
+          projectId: Number(project.id)
         }));
       state[step.seedId] = version.id;
       persist();
@@ -218,9 +221,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       console.log(`${step.method} ${step.path} — ${step.summary}`);
     }
   } catch (error) {
-    console.error(/^(Create (a Scrum|Confluence)|Set ATLASSIAN_)/.test(error.message)
-      ? error.message
-      : 'Seed operation failed. Verify site, access, project and space configuration.');
+    console.error(safeErrorMessage(error.message, process.env));
     process.exitCode = 1;
   }
 }
