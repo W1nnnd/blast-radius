@@ -1,66 +1,80 @@
-# Devpost submission — Blast Radius (paste-ready, English)
+# Devpost submission — Blast Radius
 
-> 风风 pastes these into the Devpost form and clicks Submit himself. Fill the `<…>` placeholders after deploy.
-> Category: **Apps for Software Teams**. Bonus prizes (a submission can win at most one; we qualify for all four):
-> Best Agents · Best app with Atlassian MCP · Best apps with Teamwork Graph integration · Best Marketplace published app.
+Category: **Apps for Software Teams**. Status: development version **2.4.0**, deployed 2026-11-03 and installed in Jira + Confluence on `one-atlas-wdon.atlassian.net`. Production deployment and judges’ sharing link are pending owner approval.
 
 ## Project name
 Blast Radius
 
-## Tagline (≤ 200 chars)
-Know what a release could break before you ship it — a Teamwork Graph–powered go/no-go verdict, checklist and experts in Jira, Rovo and any MCP client.
+## Tagline
+Know what a release could break before you ship it — explainable release risk, evidence, checklists and suggested reviewers in Jira, Rovo and MCP tools.
 
 ## Inspiration
-Every release review asks the same three questions: *what could this break, who knows this code, and what did we already decide or learn the hard way?* The answers live in five places — Jira, pull requests, CI, deployments and Confluence — so teams either spend an hour clicking around or ship on gut feel. Most incidents we have seen started with something that was already visible: an unreviewed PR, a red staging deploy, a runbook nobody had touched in months. Codegeist's theme — *AI can think, but knowing what to do takes context* — is exactly this gap.
+Release decisions depend on context scattered across Jira issues, code reviews, CI, deployments and Confluence. We wanted a release review that brings those signals together and makes missing evidence visible, so a team can see both what needs attention and what still needs checking.
 
 ## What it does
-Blast Radius turns a Jira issue or release version into a **release-readiness decision**:
-- **Verdict** — `GO`, `GO WITH CAUTION`, `HOLD` or `INSUFFICIENT EVIDENCE`, with a 0–100 score and a confidence level.
-- **Explainable risks** — 19 named rules in 6 capped categories (code review, CI, deployment, scope, ownership, knowledge). Every point links to the PR, build, deployment, page or incident that caused it.
-- **Pre-release checklist** — concrete must/should/nice actions ("Get an approving review on PR #42 (payments-api) — suggested: Iris Lane"), with reviewer suggestions that are never the author and are load-balanced across the team.
-- **Who to ask** — people ranked from authored and approved PRs, owned runbooks and assignments, decayed by recency, with their teams.
+Blast Radius analyzes a Jira issue or release version and returns a deterministic 0–100 risk score, a verdict (`GO`, `GO_WITH_CAUTION`, `HOLD` or `INSUFFICIENT_EVIDENCE`), linked risks, a checklist with suggested reviewers, expert suggestions and evidence coverage. No LLM decides the score.
 
-It works in three places from one engine: a **Jira issue panel**, a **Rovo agent** ("Can we ship PAY 2.4.0?"), and an **Atlassian MCP server** so Claude, Cursor or any MCP client can call the same tools — shipped with an open-source `SKILL.md`.
+The live development story is **Northwind Pay 2.4.0**: seven release issues (PAY-1…PAY-7), failed CI on PAY-1 and PAY-4, open PRs awaiting approval, staging-only deployment of `2.4.0-rc1`, and open incident **[INCIDENT] PAY-11** linked to PAY-1 and PAY-4. PAY-2/PAY-7 block PAY-1; PAY-8 from 2.3.1 blocks PAY-4. Confluence provides a runbook, ADR-024, rollback plan and postmortem.
+
+Real Jira-REST-only previews return **HOLD 82/100** for release 2.4.0 and **HOLD 67/100** for PAY-1. TWG is disabled in that preview script; the Forge panel can differ slightly when TWG adds pages. These are preview results, not completed browser verification.
+
+The engine serves a Jira issue panel, Rovo agent **Blast Radius** with four actions, and `rovo:mcp` with the same four tools. External MCP exposure is implemented but not yet enabled on this site.
 
 ## How we built it
-- **Forge** (nodejs24.x, UI Kit) with `jira:issuePanel`, `rovo:agent`, four reusable `action` modules and `rovo:mcp` exposing the same actions as MCP tools.
-- **Teamwork Graph API** via `api.asUser().requestTeamworkGraph`: curated queries (`jiraWorkItemLinkedExternalPullRequests`, `jiraWorkItemLinkedExternalDeployments`, `atlassianUserInTeams`) plus **persisted Cypher** queries executed with `customQuery` for builds, commits, blockers, linked Confluence pages, incidents and release membership (`jira_version_links_jira_work_item`). Jira REST resolves keys to ARIs and provides fallbacks.
-- **Deterministic engine** (pure JavaScript, no LLM in the score): declarative rule table → capped categories → level + blockers → verdict; coverage-aware confidence; checklist and expert ranking on the same normalized model.
-- **Least privilege**: `read:jira-work` + 12 per-object `read:graph:*` scopes, read-only, no egress, all user-scoped.
-- **Quality**: 101 unit tests (engine, adapters with fake GraphQL, handlers, manifest, scripts), manifest validated against the Forge JSON schema, bounded and sanitized outputs for LLM consumers.
+We built on Forge with UI Kit, `jira:issuePanel`, `rovo:agent`, four `action` modules and `rovo:mcp`. A shared JavaScript engine applies named risk rules in capped categories and builds the checklist and expert ranking from normalized evidence.
+
+In Forge, **Teamwork Graph comes first**: curated queries retrieve PRs and deployments; six persisted Cypher queries cover builds, commits, blockers, pages, releaseIssues and incidents. The persisted queries were registered in TWG Labs and executed through `customQuery`; curated queries also supply team context.
+
+On this site TWG returned two pages but no dev-tool objects because no GitHub/Bitbucket connector is installed. The app falls back to Jira remote links, explicitly labelled **“Jira remote link (not Teamwork Graph)”** in Evidence/coverage. Jira REST issue links provide blockers when the graph has none, and REST supports issue resolution and release membership. Every source failure becomes a coverage note rather than a blank panel.
+
+Forge reads run as the requesting user. The repository has **141 tests** covering the engine, adapters, handlers and supporting behavior. The saved live preview JSON files are separate from the fixture dataset.
 
 ## Challenges we ran into
-- Teamwork Graph moved from raw Cypher to curated + persisted queries during the hackathon window, and a missing scope returns *empty* rather than an error. We designed for that: a swappable adapter, per-source coverage, and a verdict that says `INSUFFICIENT EVIDENCE` instead of a false green.
-- Making a score that agents can explain without hallucinating — solved by keeping the number deterministic and returning evidence links with every signal.
+
+- **Forge webpack / CommonJS interop:** default imports from CommonJS Forge packages caused a module-load constructor crash. Namespace imports and explicit export resolution fixed the loading path.
+- **TWG operation names:** the gateway required the `[company]_[operation]` shape; correcting the operation name unblocked requests.
+- **Query registration:** API-token registration was rejected, so we registered the six persisted queries in TWG Labs.
+- **Partial graph failures:** a persisted page query returned an internal error. We preserve source errors as coverage notes; later reads returning two pages do not prove all queries are healthy.
+- **No dev-tool connector:** the demo site could not return graph PR/build/deployment objects. We added clearly labelled remote-link fallback rather than presenting seeded links as graph evidence.
 
 ## Accomplishments that we're proud of
-- One engine, three surfaces (human, Rovo, any MCP client) with identical answers.
-- A score you can audit line by line, and a checklist that assigns real people.
+We deployed development version 2.4.0 in Jira and Confluence, applied a coherent release-risk seed including PAY-11, and captured real REST preview results. The release preview identifies failed CI on both PAY-1 and PAY-4 and the open incident as its top risks. Its checklist includes suggested reviewers. The shared engine supports the panel, Rovo actions and MCP tools while keeping source provenance visible.
 
 ## What we learned
-Graph context is only useful if the app is honest about what it *couldn't* see. Coverage and confidence are first-class outputs.
+A graph integration needs to explain empty results and failures as carefully as successful results. Connector availability, query registration, operation naming and runtime packaging all affect whether evidence reaches the user. Coverage is part of the decision, and seeded remote links must remain distinguishable from connected dev-tool data.
 
 ## What's next
-Write the assessment back into Teamwork Graph through a connector so other agents can reuse it; release-gate automation rule ("block transition to Released when verdict is HOLD"); Bitbucket/Compass component signals.
+Complete browser verification of the panel, release analysis and Rovo flow; enable and verify MCP tools; then seek owner approval for production deployment and the judges’ sharing link. Connect a dev tool to validate graph-backed PR/build/deployment evidence. Future ideas include release-gate automation and additional component signals; these are not shipped claims.
 
 ## Built with
-forge, ui-kit, rovo, rovo-mcp, teamwork-graph, jira, confluence, javascript, node.js, graphql, cypher
+Forge, UI Kit, Jira, Confluence, Rovo, Atlassian MCP, Teamwork Graph, JavaScript, Node.js, GraphQL, Cypher.
 
 ## How the project meets the main technology requirement
-Blast Radius is a Forge app (`manifest.yml` with `jira:issuePanel`, `rovo:agent`, `action`, `rovo:mcp` modules) that integrates with Jira (issue panel, REST), Teamwork Graph (curated + persisted Cypher queries via `requestTeamworkGraph`), Confluence content via the graph, and Rovo (agent + MCP). It runs entirely on Atlassian Forge.
+Blast Radius is a Forge app integrating Jira issue context and REST, Teamwork Graph curated and persisted queries, Confluence page context, and Rovo actions. The panel and agent use the same engine; external agents can use the MCP tools after a site admin enables exposure.
 
 ## Bonus prize explanations
-- **Best Agents:** `rovo:agent` "Blast Radius" with four reusable `action` modules (GET) that other agents can invoke as tools; structured prompt with prompt-injection guard; conversation starters for the demo.
-- **Best app with Atlassian MCP:** `rovo:mcp` exposes the same four actions at `https://mcp.atlassian.com/forge/<appId>`; open-source `skills/blast-radius/SKILL.md` teaches Claude/Cursor when and how to call them. Demo shows Claude/Cursor calling `score-release-risk`.
-- **Best apps with Teamwork Graph integration:** consumes TWG with curated queries and six persisted Cypher traversals across Jira, external dev tools, Confluence, people and teams; per-object scopes; coverage-aware results.
-- **Best Marketplace published app:** `<Marketplace listing or review-ticket link>` (separate unlicensed copy keeps the installation link for judges).
+
+- **Agents:** Blast Radius is a Rovo agent with four reusable actions: `get-change-context`, `score-release-risk`, `find-experts`, `generate-release-checklist`.
+- **Atlassian MCP:** `rovo:mcp` exposes the same tools after admin enablement. TODO: enable and verify an external client recording. The repository includes `skills/blast-radius/SKILL.md`.
+- **Teamwork Graph:** curated queries and six persisted Cypher queries run first, with explicit source coverage and labelled fallbacks.
+- **Marketplace:** TODO: listing or review-ticket link, if pursuing this category. Publication and eligibility are not established here.
 
 ## Installation link & testing instructions (for judges)
-1. Open `<installation link>` and install into your Jira Cloud site (Jira only; takes ~1 minute). Accept the read-only scopes.
-2. Open any issue → **Apps → Blast Radius** panel. With linked PRs/builds/deployments (GitHub/Bitbucket for Jira) you get live results; otherwise the coverage tab tells you which sources were empty.
-3. Rovo Chat → Agents → **Blast Radius** → "Can we ship <PROJECT> <version>?" or "What could <ISSUE-KEY> break?".
-4. MCP (optional): an admin enables the app's tools under Atlassian Administration → Connected apps → Blast Radius. Add `https://mcp.atlassian.com/forge/<appId>` as a remote MCP server in Claude/Cursor.
-5. Demo data: our demo site `<site>.atlassian.net` has project PAY with releases 2.4.0 (HOLD) and 2.3.1 (GO). Test account on request: `<email>`.
+
+**Installation/sharing link: TODO — production deployment and link creation pending owner approval.** The current installation is development-only; this document does not establish judge access.
+
+Once access to the seeded development site is arranged:
+
+1. Open [PAY-1](https://one-atlas-wdon.atlassian.net/browse/PAY-1) → **Apps → Blast Radius**. Expect approximately **HOLD 67/100**; inspect failed CI and incident PAY-11.
+2. Open **Evidence**. Check provenance labels, including **“Jira remote link (not Teamwork Graph)”**, and coverage notes for unavailable sources. No dev-tool connector is installed.
+3. Use the panel’s release option to analyze **PAY 2.4.0**. Expect approximately **HOLD 82/100**, with failed builds on PAY-1/PAY-4 and open incident PAY-11 among the top risks. Open **Checklist** for actions and suggested reviewers. Panel scores can differ slightly from REST previews when TWG adds pages.
+4. In Rovo Chat choose **Blast Radius** and ask **“Can we ship PAY 2.4.0?”**. TODO: verify the current browser response before recording or sharing.
+5. Optional MCP, **only after enablement**: a site admin opens **Atlassian Administration → Apps → Sites → one-atlas-wdon → Connected apps → Blast Radius → View app details → Tools / “Expose tools via external MCP endpoint”**. Configure `https://mcp.atlassian.com/forge/71f0dc36-ccf4-4d78-88d0-882f02159e9e` in a compatible client and call `score-release-risk` with `projectKey: PAY`, `versionName: 2.4.0`. Tools are not yet enabled; verification is TODO.
+
+For offline inspection, see [release preview](../demo/live-preview-release-2.4.0.json) and [PAY-1 preview](../demo/live-preview-PAY-1.json). These are real outputs of `node scripts/live-preview.mjs` after `scripts/seed-live-v2.mjs`; preview uses Jira REST only, with TWG disabled.
 
 ## Links
-- Video: `<YouTube URL>` · Repository (optional, not required by rules): `<repo URL or "available on request">`
+
+- Installation/sharing link: **TODO**.
+- Video URL: **TODO**.
+- Repository URL: **TODO**.

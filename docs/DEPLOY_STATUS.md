@@ -2,6 +2,25 @@
 
 As of **2026-11-03 SGT**.
 
+## 2026-11-03 live demo v2 — current status
+
+- Development app **2.4.0** deployed on **2026-11-03**, installed in **Jira + Confluence** on `one-atlas-wdon.atlassian.net`. Production is not deployed; judges’ sharing link is not created.
+- `scripts/seed-live-v2.mjs` applied the **Northwind Pay 2.4.0** story: seven release issues PAY-1…PAY-7; failed CI on PAY-1/PAY-4; open PRs awaiting approval; staging-only `2.4.0-rc1`; open **[INCIDENT] PAY-11** linked to PAY-1/PAY-4. PAY-2/PAY-7 block PAY-1, and PAY-8 (2.3.1) blocks PAY-4. Confluence includes the runbook, ADR-024, rollback plan and postmortem.
+- Forge uses TWG first (curated PR/deployment queries and six persisted Cypher queries registered in TWG Labs). TWG returned **two pages**, but no dev-tool objects because the site has no GitHub/Bitbucket connector. Jira remote links supply fallback evidence, labelled **“Jira remote link (not Teamwork Graph)”** in Evidence/coverage. Jira REST issue links provide blockers when the graph has none. Every source failure becomes a coverage note, never a blank panel.
+- Real outputs of `node scripts/live-preview.mjs` after seeding are saved as [release 2.4.0](../demo/live-preview-release-2.4.0.json) (**HOLD 82/100**) and [PAY-1](../demo/live-preview-PAY-1.json) (**HOLD 67/100**). These previews are **Jira-REST-only, with TWG disabled**. Release top risks: failed CI on PAY-1/PAY-4 and incident PAY-11; checklist includes suggested reviewers. Panel values may differ slightly when TWG adds pages.
+- Current test count: **141**. Earlier counts and versions below are historical.
+
+Remaining work for this live demo:
+
+- **TODO: browser verification** — open [PAY-1](https://one-atlas-wdon.atlassian.net/browse/PAY-1), inspect verdict and Evidence/coverage, analyze PAY 2.4.0 through the panel’s release option, inspect Checklist/reviewers, and verify the Rovo agent **Blast Radius** with “Can we ship PAY 2.4.0?”. Capture screenshots and video after verification.
+- **TODO: enable and verify MCP** — not yet enabled. Site admin path: **Atlassian Administration → Apps → Sites → one-atlas-wdon → Connected apps → Blast Radius → View app details → Tools / “Expose tools via external MCP endpoint”**. Endpoint: `https://mcp.atlassian.com/forge/71f0dc36-ccf4-4d78-88d0-882f02159e9e`; four tools share the Rovo actions. Verify `score-release-risk` after enablement.
+- **Production deployment + judges’ sharing link: pending owner approval.** Installation/sharing URL and video URL: **TODO**.
+- Dev-tool connector coverage and persisted-query health still need verification; the earlier page-query internal error remains relevant history even though later TWG reads returned pages.
+
+## Earlier deployment history
+
+The entries below describe earlier stages and are superseded by the live demo v2 status above where they differ.
+
 ## Completed
 
 - Developer Space: `fengfeng-dev`.
@@ -53,7 +72,7 @@ Logs now print `[blast-radius] twg {"source","status","code","classification","m
 Live demo issue is **PAY-1** (dataset `PAY-142`, the richest: blocked by PAY-2, linked pages/remote PR links). Manifest starters, docs and skill now say PAY-1; fixture mode accepts PAY-1..PAY-10 as aliases of PAY-142..PAY-151.
 Panel test URL: https://one-atlas-wdon.atlassian.net/browse/PAY-1
 
-## Remaining work
+## Earlier remaining-work snapshot (superseded above)
 
 - Open the PAY-1 panel in a browser, then `forge logs -e development --since 15m` to see per-source codes/counts (no invocation logged yet).
 - `pages` query: internal Atlassian error; consider re-registering with a different traversal (e.g. `jira_work_item_links_confluence_page` style relationship) or report to Atlassian.
