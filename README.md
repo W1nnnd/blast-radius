@@ -2,9 +2,9 @@
 
 > Codegeist 2026 · **Apps for Software Teams** · Forge app for Jira + Rovo + Atlassian MCP + Teamwork Graph
 >
-> Status (2026-11-03): development app **2.4.0** deployed and installed in Jira + Confluence on
-> `one-atlas-wdon.atlassian.net`; **141 tests**. Browser verification remains TODO.
-> Production deployment and the judges’ sharing link are pending owner approval. See [deployment status](docs/DEPLOY_STATUS.md).
+> Status (2026-11-03 15:45 SGT): production app **2.0.0** deployed and installed in Jira + Confluence on
+> `one-atlas-wdon.atlassian.net`, alongside development **2.4.0**; **141 tests**. Browser verification remains TODO.
+> Judges’ sharing link generation is pending. See [deployment status](docs/DEPLOY_STATUS.md).
 
 Before every release an engineering lead has to answer three questions:
 **What could this break? Who knows this code? What did we already decide or learn the hard way?**
@@ -18,6 +18,14 @@ that context and turns it into:
 4. **Who to ask** — experts ranked from authored/approved PRs, owned runbooks and assignments, with recency decay.
 
 The score is **deterministic** (no LLM decides the number). Rovo and external agents only explain it.
+
+## Source / Install
+
+Public source: [W1nnnd/blast-radius](https://github.com/W1nnnd/blast-radius), branch `main`.
+
+Production **2.0.0** is deployed with `BLAST_RADIUS_DATA_SOURCE=twg` and installed in Jira + Confluence on `one-atlas-wdon.atlassian.net`. Development **2.4.0** remains installed on the same site; both environments co-exist.
+
+Judges’ installation link: **TODO — generate in the developer console**. See [deployment status](docs/DEPLOY_STATUS.md) for the distribution steps.
 
 ## One engine, three surfaces
 | Surface | Manifest module | For |
@@ -96,7 +104,7 @@ Rovo Chat: choose agent **Blast Radius**, then ask **"Can we ship PAY 2.4.0?"**.
 - No dev-tool connector on this site: remote links are seeded context, not proof of live CI or deployment synchronization. Empty graph results do not prove that no risks exist.
 - A persisted page query returned an internal error during setup; failures remain visible in coverage. Later TWG reads returned two pages, which does not establish that every query is healthy.
 - Browser verification of the current panel, release view and Rovo response is TODO. MCP verification is TODO after admin enablement.
-- Production deployment, judges’ installation/sharing link and video URL are TODO, pending owner approval where applicable.
+- Judges’ installation/sharing link generation and video URL are TODO.
 
 ## Screenshots (TODO: capture from the live development UI)
 
@@ -120,4 +128,6 @@ TODO: MCP client after tools are enabled.
 `prompts/agent-prompt.txt` · `skills/blast-radius/SKILL.md` · `scripts/` · `demo/seed/` · `test/` · `docs/`
 ([Devpost text](docs/DEVPOST_SUBMISSION.md), [video script](docs/DEMO_VIDEO_SCRIPT.md), [deploy runbook](docs/DEPLOY_AFTER_LOGIN.md)).
 
-MIT License © 2026 W1nnnd.
+## License
+
+[MIT License](LICENSE) © 2026 W1nnnd.

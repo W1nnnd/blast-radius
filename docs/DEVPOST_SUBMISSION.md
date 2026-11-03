@@ -1,6 +1,6 @@
 # Devpost submission — Blast Radius
 
-Category: **Apps for Software Teams**. Status: development version **2.4.0**, deployed 2026-11-03 and installed in Jira + Confluence on `one-atlas-wdon.atlassian.net`. Production deployment and judges’ sharing link are pending owner approval.
+Category: **Apps for Software Teams**. Status as of **2026-11-03 15:45 SGT**: production **2.0.0** is deployed and installed in Jira + Confluence on the demo site, `one-atlas-wdon.atlassian.net`; judges’ sharing link generation is pending. Development **2.4.0** remains installed on the same site alongside production.
 
 ## Project name
 Blast Radius
@@ -44,7 +44,7 @@ We deployed development version 2.4.0 in Jira and Confluence, applied a coherent
 A graph integration needs to explain empty results and failures as carefully as successful results. Connector availability, query registration, operation naming and runtime packaging all affect whether evidence reaches the user. Coverage is part of the decision, and seeded remote links must remain distinguishable from connected dev-tool data.
 
 ## What's next
-Complete browser verification of the panel, release analysis and Rovo flow; enable and verify MCP tools; then seek owner approval for production deployment and the judges’ sharing link. Connect a dev tool to validate graph-backed PR/build/deployment evidence. Future ideas include release-gate automation and additional component signals; these are not shipped claims.
+Complete browser verification of the panel, release analysis and Rovo flow; enable and verify MCP tools; generate the judges’ sharing link in the developer console. Connect a dev tool to validate graph-backed PR/build/deployment evidence. Future ideas include release-gate automation and additional component signals; these are not shipped claims.
 
 ## Built with
 Forge, UI Kit, Jira, Confluence, Rovo, Atlassian MCP, Teamwork Graph, JavaScript, Node.js, GraphQL, Cypher.
@@ -61,9 +61,9 @@ Blast Radius is a Forge app integrating Jira issue context and REST, Teamwork Gr
 
 ## Installation link & testing instructions (for judges)
 
-**Installation/sharing link: TODO — production deployment and link creation pending owner approval.** The current installation is development-only; this document does not establish judge access.
+**Installation/sharing link: TODO — generate in the developer console.** Production **2.0.0** is deployed and installed in Jira + Confluence alongside development **2.4.0** on the demo site; judge access has not been established. See [deployment status](DEPLOY_STATUS.md) for the distribution steps.
 
-Once access to the seeded development site is arranged:
+Once access to the seeded demo site is arranged:
 
 1. Open [PAY-1](https://one-atlas-wdon.atlassian.net/browse/PAY-1) → **Apps → Blast Radius**. Expect approximately **HOLD 67/100**; inspect failed CI and incident PAY-11.
 2. Open **Evidence**. Check provenance labels, including **“Jira remote link (not Teamwork Graph)”**, and coverage notes for unavailable sources. No dev-tool connector is installed.
@@ -77,4 +77,4 @@ For offline inspection, see [release preview](../demo/live-preview-release-2.4.0
 
 - Installation/sharing link: **TODO**.
 - Video URL: **TODO**.
-- Repository URL: **TODO**.
+- Repository URL: [W1nnnd/blast-radius](https://github.com/W1nnnd/blast-radius) (public, `main`, MIT).

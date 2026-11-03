@@ -1,10 +1,25 @@
 # Deployment status
 
-As of **2026-11-03 SGT**.
+As of **2026-11-03 15:45 SGT**.
+
+## Production deployment — 2026-11-03 15:45 SGT
+
+- Production app **2.0.0** is deployed with `BLAST_RADIUS_DATA_SOURCE=twg`.
+- Installed on `one-atlas-wdon.atlassian.net` in **Jira** (installation `5b61467e-cb9c-4896-b55e-2819d14db88f`) and **Confluence** (installation `d57fb83f-7807-4ca4-b041-a468848be85f`).
+- Development **2.4.0** remains installed on the same site: Jira installation `eb77711d-…`, Confluence installation `57c71cde-…`. Both environments co-exist.
+- Public source: [W1nnnd/blast-radius](https://github.com/W1nnnd/blast-radius), branch `main`, [MIT license](../LICENSE).
+- Judges’ installation link: **TODO — not generated yet**.
+
+Generate the link in the developer console:
+
+1. Open **Distribution → Distribution controls → Edit → Sharing**.
+2. Complete the **app details**.
+3. Select **Jira + Confluence**.
+4. **Save**, then **copy installation link** and replace the TODO in these submission documents.
 
 ## 2026-11-03 live demo v2 — current status
 
-- Development app **2.4.0** deployed on **2026-11-03**, installed in **Jira + Confluence** on `one-atlas-wdon.atlassian.net`. Production is not deployed; judges’ sharing link is not created.
+- Development app **2.4.0** deployed on **2026-11-03**, installed in **Jira + Confluence** on `one-atlas-wdon.atlassian.net`. Production **2.0.0** is also deployed and installed on this site; judges’ sharing link is not created.
 - `scripts/seed-live-v2.mjs` applied the **Northwind Pay 2.4.0** story: seven release issues PAY-1…PAY-7; failed CI on PAY-1/PAY-4; open PRs awaiting approval; staging-only `2.4.0-rc1`; open **[INCIDENT] PAY-11** linked to PAY-1/PAY-4. PAY-2/PAY-7 block PAY-1, and PAY-8 (2.3.1) blocks PAY-4. Confluence includes the runbook, ADR-024, rollback plan and postmortem.
 - Forge uses TWG first (curated PR/deployment queries and six persisted Cypher queries registered in TWG Labs). TWG returned **two pages**, but no dev-tool objects because the site has no GitHub/Bitbucket connector. Jira remote links supply fallback evidence, labelled **“Jira remote link (not Teamwork Graph)”** in Evidence/coverage. Jira REST issue links provide blockers when the graph has none. Every source failure becomes a coverage note, never a blank panel.
 - Real outputs of `node scripts/live-preview.mjs` after seeding are saved as [release 2.4.0](../demo/live-preview-release-2.4.0.json) (**HOLD 82/100**) and [PAY-1](../demo/live-preview-PAY-1.json) (**HOLD 67/100**). These previews are **Jira-REST-only, with TWG disabled**. Release top risks: failed CI on PAY-1/PAY-4 and incident PAY-11; checklist includes suggested reviewers. Panel values may differ slightly when TWG adds pages.
@@ -14,7 +29,7 @@ Remaining work for this live demo:
 
 - **TODO: browser verification** — open [PAY-1](https://one-atlas-wdon.atlassian.net/browse/PAY-1), inspect verdict and Evidence/coverage, analyze PAY 2.4.0 through the panel’s release option, inspect Checklist/reviewers, and verify the Rovo agent **Blast Radius** with “Can we ship PAY 2.4.0?”. Capture screenshots and video after verification.
 - **TODO: enable and verify MCP** — not yet enabled. Site admin path: **Atlassian Administration → Apps → Sites → one-atlas-wdon → Connected apps → Blast Radius → View app details → Tools / “Expose tools via external MCP endpoint”**. Endpoint: `https://mcp.atlassian.com/forge/71f0dc36-ccf4-4d78-88d0-882f02159e9e`; four tools share the Rovo actions. Verify `score-release-risk` after enablement.
-- **Production deployment + judges’ sharing link: pending owner approval.** Installation/sharing URL and video URL: **TODO**.
+- **Judges’ sharing link: TODO — generate using the developer console steps above.** Video URL: **TODO**.
 - Dev-tool connector coverage and persisted-query health still need verification; the earlier page-query internal error remains relevant history even though later TWG reads returned pages.
 
 ## Earlier deployment history
@@ -79,4 +94,4 @@ Panel test URL: https://one-atlas-wdon.atlassian.net/browse/PAY-1
 - Dev-tool data (builds/commits/PRs/deployments) is empty without a GitHub/Bitbucket connector.
 - Verify `NEEDS-LIVE` queries return data once links exist.
 - Enable MCP tools in admin.
-- Deploy to production and create a sharing link **only after user approval**.
+- Production deployment is now complete (see above); judges’ sharing link generation remains TODO.
